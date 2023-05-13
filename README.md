@@ -50,6 +50,9 @@
 ---
 ### Creators Note
 - This bot is protected and licensed under the GNU General Public License v3.0. I am not liable for any damage that my bots may cause to your computer or discord server. I have the right to deny support for my bots at anytime for any reason. Even though this bot is open-sourced, it's source-code may be used for inspiration but may not be used for malicious intent.  
+
 - This is the fourth iteration of this bot, all previous versions have been used in private closed environments and will not be released to the public. This is the first public version of this bot.
+
 - I would like to say a huge thanks to my good friend [Reb](https://rebsdesigns.com/). Without him, this whole idea of me making a "Ticket Bot" for discord would of never been possible. Thank you for giving me the opportunity to make a bot for you in the first place, kickstarting my devving career.
+
 - Thank you to my good friend [Jake](https://github.com/jfmcdavitt) who helped me setup some of the backend parts of the bot. Without him, I would still be pondering on how am I going to make some parts of this thing work.
