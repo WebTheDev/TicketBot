@@ -5,12 +5,7 @@
 ---
 ### Screenshots
 
-<p align="left">
-  <img src="https://cdn.discordapp.com/attachments/825594967777869838/1106811576897503282/ticket-bot-demo.gif" />
-</p>
-<p align="right">
-  <img src="https://media.discordapp.net/attachments/828110039956455444/1107065883756605481/ezgif-5-164059f8ff.gif" />
-</p>
+<p align="left"><img src="https://cdn.discordapp.com/attachments/825594967777869838/1106811576897503282/ticket-bot-demo.gif" /></p><p align="right"><img src="https://media.discordapp.net/attachments/828110039956455444/1107065883756605481/ezgif-5-164059f8ff.gif" /></p>
 
 ---
 ### Features
