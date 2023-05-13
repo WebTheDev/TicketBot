@@ -26,8 +26,8 @@
 
 ---
 ### [Python](https://www.python.org/downloads/) Packages Required (Install with [Pip](https://pip.pypa.io/en/stable/installing/)):
-[Discord](https://pypi.org/project/discord.py/)
-[chat-exporter](https://pypi.org/project/chat-exporter/)
+- [Discord](https://pypi.org/project/discord.py/)
+- [chat-exporter](https://pypi.org/project/chat-exporter/)
 
 ---
 ### Setup
