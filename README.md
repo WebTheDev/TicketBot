@@ -35,9 +35,9 @@
 - Create a channel that the bot can use to send the "Create a ticket" embed.
 - Create a bot application at the [discord developer panel](https://discord.com/developers/applications) and enable all intents. 
 - Add the bot to your discord server by generating a OAuth2 invite link for your application and make sure to enable **bot** and **apps.commands**. Then for the permissions, tick Administrator.
-- Copy your bot token from the [discord developer panel](https://discord.com/developers/applications) under the bot tab and add it to the token.json file.
-- Adjust the config.py file to your liking.
-- Run the main.py file in python and the bot should start up. The bot will be fully running once the "Bot is up and running" message is outputted to the console.
+- Copy your bot token from the [discord developer panel](https://discord.com/developers/applications) under the bot tab and add it to the "[token.json](https://github.com/WebTheDev/TicketBot/blob/main/token.json)" file.
+- Adjust the "[config.py](https://github.com/WebTheDev/TicketBot/blob/main/config.py)" file to your liking.
+- Run the "[main.py](https://github.com/WebTheDev/TicketBot/blob/main/main.py)" file in python and the bot should start up. The bot will be fully running once the "Bot is up and running" message is outputted to the console.
 - Run the **/sync** command in order to sync the bot's slash commands with discord.
 - **ON FIRST RUN, THE BOT WILL EXIT PYTHON AUTOMATICALLY IN ORDER TO SAVE THE MESSAGE ID OF THE "CREATE A TICKET" EMBED IN THE BOT'S CONFIG.** Simply restart the bot again in order to apply the necessary config changes.
 
