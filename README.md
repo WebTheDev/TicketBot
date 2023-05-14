@@ -1,5 +1,5 @@
 ### Discord-TicketBot 📝
-[![Version Badge](https://warehouse-camo.ingress.cmh1.psfhosted.org/e21c149917b21ef666e263301355bec38dc9cdc7/68747470733a2f2f696d672e736869656c64732e696f2f707970692f762f646973636f72642e70792e737667)](https://pypi.org/project/discord.py/)
+
 - A discord bot that is designed to manage and create ticket channels on behalf of server members using the [Rapptz discord.py API](https://github.com/Rapptz/discord.py).
 - Compiled on Python 3.8.1.  
 
