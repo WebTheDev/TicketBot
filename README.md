@@ -31,6 +31,8 @@
 ---
 ### Setup
 - Place all bot related files into a seperate folder (this is **important** to do so, or else the python compiler will not be able to find the bot files necessary for the ticket bot to work)
+- Create three categories in the discord server that the bot will be running in labeled: Active, OnHold, and Archived (set permissions as needed).
+- Create a channel that the bot can use to send the "Create a ticket" embed.
 - Create a bot application at the [discord developer panel](https://discord.com/developers/applications) and enable all intents. 
 - Add the bot to your discord server by generating a OAuth2 invite link for your application and make sure to enable **bot** and **apps.commands**. Then for the permissions, tick Administrator.
 - Copy your bot token from the [discord developer panel](https://discord.com/developers/applications) under the bot tab and add it to the token.json file.
