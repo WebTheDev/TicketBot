@@ -30,47 +30,87 @@ async def on_ready():
     print (f"Bot ID: {bot.user.id}")
     print ("Discord Version: " + discord.__version__)
     print ("------------------------------------")
-    activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatus}')
-    await bot.change_presence(status=discord.Status.online, activity=activity1)
-    allTickets = []
-    allTickets = TicketData.getall(databasecur, allTickets)
-    for tickets in allTickets:
-        channelID = int(tickets[0])
-        messageID = int(tickets[6])
-        tchannel = bot.get_channel(channelID)
-        if tchannel != None:
-            tmessage = await tchannel.fetch_message(messageID)
-            await tmessage.edit(view=embedButtons(timeout=None))
-        else:
-            pass
-    embed = discord.Embed(title='''**Create a ticket**''', description=f'Press the button below to create a ticket!', color=embedColor)
-    embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-    try:
-        tchannel = bot.get_channel(IDOfChannelToSendTicketCreationEmbed)
-        tmessage = await tchannel.fetch_message(IDofMessageForTicketCreation)
-        await tmessage.edit(embed=embed, view=TicketCreation(timeout=None))
-        print("[MESSAGE]: Relinked to Ticket Creation Embed, standing by for ticket creation...")
-        print("---------------------------------------------------------------------------------")
-    except Exception:
-            print("[ERROR]: Embed Message not found! Creating a new embed message, please restart the bot if not restarted automatically")
-            print("--------------------------------------------------------------------------------")
-            nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-            configFile = open("config.py", "r")
-            configLines = configFile.readlines()
-            configFile.close()
-            configLines[17] = (f'IDofMessageForTicketCreation = {nmessage.id}\n')
-            configFile = open("config.py", "w")
-            configFile.writelines(configLines)
-            configFile.close()
-            embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
-            embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
-            developer = bot.get_user(debugLogSendID)
-            try:
-                await developer.send(embed=embed2)
-            except discord.HTTPException:
-                await developer.send(f"**__Embed Message ID Updated:__**\nNew Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**")
-            await bot.close()
-            os.execv(sys.argv[0], sys.argv)
+    if f'{botStatusType}' == 'Playing':
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
+        await bot.change_presence(status=discord.Status.online, activity=activity1)
+    elif f'{botStatusType}' == 'Streaming':
+        activity1 = discord.Activity(type=discord.ActivityType.streaming, name=f'{botStatusMessage}')
+        await bot.change_presence(status=discord.Status.online, activity=activity1)
+    elif f'{botStatusType}' == 'Watching':
+        activity1 = discord.Activity(type=discord.ActivityType.watching, name=f'{botStatusMessage}')
+        await bot.change_presence(status=discord.Status.online, activity=activity1)
+    elif f'{botStatusType}' == 'Listening':
+        activity1 = discord.Activity(type=discord.ActivityType.listening, name=f'{botStatusMessage}')
+        await bot.change_presence(status=discord.Status.online, activity=activity1)
+    else:
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
+        await bot.change_presence(status=discord.Status.online, activity=activity1)
+        print('''[WARN]: You have incorrectly specified the bot's activity type, the default has been selected. ''')
+        print("----------------------------------------------------")
+    if firstRun == True:
+        print("[MESSAGE]: First Run is set to true, syncing slash commands with discord and generating ticket creation embed...")
+        print("--------------------------------------------------------------------------------")
+        await ticket.sync()
+        nmessage = await tchannel.send(embed=embed, view=TicketCreation())
+        configFile = open("config.py", "r")
+        configLines = configFile.readlines()
+        configFile.close()
+        configLines[17] = (f'IDofMessageForTicketCreation = {nmessage.id}\n')
+        configLines[48] = (f"firstRun = False")
+        configFile = open("config.py", "w")
+        configFile.writelines(configLines)
+        configFile.close()
+        embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
+        embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
+        developer = bot.get_user(debugLogSendID)
+        try:
+            await developer.send(embed=embed2)
+        except discord.HTTPException:
+            await developer.send(f"**__Embed Message ID Updated:__**\nNew Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**")
+        await bot.close()
+        print("[WARN]: Embed Message Generated! Please restart the bot if not restarted automatically.")
+        print("--------------------------------------------------------------------------------")
+        os.execv(sys.argv[0], sys.argv)
+    else:
+        allTickets = []
+        allTickets = TicketData.getall(databasecur, allTickets)
+        for tickets in allTickets:
+            channelID = int(tickets[0])
+            messageID = int(tickets[6])
+            tchannel = bot.get_channel(channelID)
+            if tchannel != None:
+                tmessage = await tchannel.fetch_message(messageID)
+                await tmessage.edit(view=embedButtons(timeout=None))
+            else:
+                pass
+        embed = discord.Embed(title='''**Create a ticket**''', description=f'Press the button below to create a ticket!', color=embedColor)
+        embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        try:
+            tchannel = bot.get_channel(IDOfChannelToSendTicketCreationEmbed)
+            tmessage = await tchannel.fetch_message(IDofMessageForTicketCreation)
+            await tmessage.edit(embed=embed, view=TicketCreation(timeout=None))
+            print("[MESSAGE]: Relinked to Ticket Creation Embed, standing by for ticket creation...")
+            print("---------------------------------------------------------------------------------")
+        except Exception:
+                print("[ERROR]: Embed Message not found! Creating a new embed message, please restart the bot if not restarted automatically")
+                print("--------------------------------------------------------------------------------")
+                nmessage = await tchannel.send(embed=embed, view=TicketCreation())
+                configFile = open("config.py", "r")
+                configLines = configFile.readlines()
+                configFile.close()
+                configLines[17] = (f'IDofMessageForTicketCreation = {nmessage.id}\n')
+                configFile = open("config.py", "w")
+                configFile.writelines(configLines)
+                configFile.close()
+                embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
+                embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
+                developer = bot.get_user(debugLogSendID)
+                try:
+                    await developer.send(embed=embed2)
+                except discord.HTTPException:
+                    await developer.send(f"**__Embed Message ID Updated:__**\nNew Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**")
+                await bot.close()
+                os.execv(sys.argv[0], sys.argv)
     print("[MESSAGE]: Bot is up and running!")
     print("------------------------------------")
     TicketData.close(databasecon)
@@ -171,7 +211,7 @@ async def self(interaction: discord.Interaction, reason: str = 'Unspecified'):
                 await interaction.response.send_message(f'''{author.mention}, **you can't use that command! ❌**''', ephemeral=True)    
     except Exception as e:
         message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
-        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatus}')
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(debugLogSendID)
         text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))
@@ -278,7 +318,7 @@ async def options(interaction: discord.Interaction):
                 await interaction.response.send_message(f'''**You can't use that command!****''')
     except Exception as e:
         message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
-        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatus}')
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(debugLogSendID)
         text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))
@@ -313,7 +353,7 @@ async def self(interaction:discord.Interaction):
             await interaction.response.send_message("Something funny happened here, try again", ephemeral=True)
     except Exception as e:
         message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
-        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatus}')
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(debugLogSendID)
         text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))

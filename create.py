@@ -172,7 +172,7 @@ class embedButtons(discord.ui.View):
                     await interaction.response.send_message(f'''**You can't use that command!****''')
         except Exception as e:
             message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the developer ❌', ephemeral=True)
-            activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatus}')
+            activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
             await bot.change_presence(status=discord.Status.dnd, activity=activity1)
             web = bot.get_user(debugLogSendID)
             text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))
