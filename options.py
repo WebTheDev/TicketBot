@@ -366,14 +366,17 @@ class optionsMenu(discord.ui.View):
         lchannel = bot.get_channel(ticketTranscriptChannelID)
         author = interaction.user
         guild = interaction.guild
+        connection = TicketData.connect()
+        cursor = TicketData.cursor(connection)
+        ticketInfo = TicketData.find(cursor, tchannel.id)
         syslogc = get(guild.channels, id=ticketLogsChannelID)
         embed4 = discord.Embed(description=f'Transcribing Ticket...', color=embedColor)
         embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
         embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
-            message3 = await interaction.response.edit_message(embed=embed4, view=None)
+            await interaction.response.edit_message(embed=embed4, view=None)
         except discord.HTTPException:
-            message3 = await interaction.response.edit_message(f"Transcribing Ticket...", )
+            await interaction.response.edit_message(f"Transcribing Ticket...", )
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         embed3 = discord.Embed(title=f'Ticket Closed', description=f'{author.mention} has closed this ticket, it will be logged and deleted within 5 seconds.', color=embedColor)
@@ -386,10 +389,18 @@ class optionsMenu(discord.ui.View):
         transcript = await chat_exporter.export(tchannel)
         transcript_file = discord.File(io.BytesIO(transcript.encode()),
                                        filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
-        await lchannel.send(file=transcript_file)
-        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'{author.mention} has transcribed a ticket, it has been logged and deleted.', color=embedColor)
-        embed2.add_field(name='Channel:', value=f'#{tchannel.name}', inline=False)
+        transcript_message = await lchannel.send(file=transcript_file)
+        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'A open ticket has been marked as closed by {author.mention}, it has been logged and deleted.', color=embedColor)
+        embed2.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
+        embed2.set_author(name=author, icon_url=author.display_avatar)
         embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed2.add_field(name='**__Channel Name:__**', value=f'#{tchannel.name}', inline=True)
+        embed2.add_field(name="**__Author:__**", value=f"{bot.get_user(int(ticketInfo[1])).mention}", inline=True)
+        embed2.add_field(name="**__Type:__**", value=f"{ticketInfo[4]}", inline=True)
+        embed2.add_field(name="**__Time Created:__**", value=f"{ticketInfo[3]}", inline=False)
+        embed2.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message.jump_url}", inline=True)
+        transcript_url = ("https://tari.blue/ticketviewer/?url="+ transcript_message.attachments[0].url)
+        embed2.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url})", inline=True)
         try:
             message3 = await syslogc.send(embed=embed2)
         except discord.HTTPException:
@@ -402,10 +413,13 @@ class optionsMenu(discord.ui.View):
 class yesOrNoOption(discord.ui.View):
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
     async def yes(self, interaction:discord.Interaction, button: discord.ui.button):
-        author = interaction.user
-        guild = interaction.guild
         tchannel = interaction.channel
         lchannel = bot.get_channel(ticketTranscriptChannelID)
+        author = interaction.user
+        guild = interaction.guild
+        connection = TicketData.connect()
+        cursor = TicketData.cursor(connection)
+        ticketInfo = TicketData.find(cursor, tchannel.id)
         syslogc = get(guild.channels, id=ticketLogsChannelID)
         embed4 = discord.Embed(description=f'Transcribing Ticket...', color=embedColor)
         embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
@@ -413,7 +427,7 @@ class yesOrNoOption(discord.ui.View):
         try:
             await interaction.response.edit_message(embed=embed4, view=None)
         except discord.HTTPException:
-            await interaction.response.edit_message(f"Transcribing Ticket...", view=None)
+            await interaction.response.edit_message(f"Transcribing Ticket...", )
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         embed3 = discord.Embed(title=f'Ticket Closed', description=f'{author.mention} has closed this ticket, it will be logged and deleted within 5 seconds.', color=embedColor)
@@ -425,11 +439,19 @@ class yesOrNoOption(discord.ui.View):
         await asyncio.sleep(2)
         transcript = await chat_exporter.export(tchannel)
         transcript_file = discord.File(io.BytesIO(transcript.encode()),
-                                        filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
-        await lchannel.send(file=transcript_file)
-        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'{author.mention} has transcribed a ticket, it has been logged and deleted.', color=embedColor)
-        embed2.add_field(name='Channel:', value=f'#{tchannel.name}', inline=False)
+                                       filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
+        transcript_message = await lchannel.send(file=transcript_file)
+        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'A open ticket has been marked as closed by {author.mention}, it has been logged and deleted.', color=embedColor)
+        embed2.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
+        embed2.set_author(name=author, icon_url=author.display_avatar)
         embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed2.add_field(name='**__Channel Name:__**', value=f'#{tchannel.name}', inline=True)
+        embed2.add_field(name="**__Author:__**", value=f"{bot.get_user(int(ticketInfo[1])).mention}", inline=True)
+        embed2.add_field(name="**__Type:__**", value=f"{ticketInfo[4]}", inline=True)
+        embed2.add_field(name="**__Time Created:__**", value=f"{ticketInfo[3]}", inline=False)
+        embed2.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message.jump_url}", inline=True)
+        transcript_url = ("https://tari.blue/ticketviewer/?url="+ transcript_message.attachments[0].url)
+        embed2.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url})", inline=True)
         try:
             message3 = await syslogc.send(embed=embed2)
         except discord.HTTPException:

@@ -47,7 +47,7 @@ class embedButtons(discord.ui.View):
         ltype = (ticketInfo[4])
         allowedAcess = False
         try:
-            for allowedRoles in list(channelPerms[f"{ltype}"]):
+            for allowedRoles in list(channelPerms[f"{ticketTypeAllowedToCreatePrivateChannels}"]):
                 prole = discord.utils.get(guild.roles, id=allowedRoles)
                 if prole in author.roles:
                     allowedAcess = True
