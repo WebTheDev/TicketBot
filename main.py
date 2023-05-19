@@ -50,7 +50,7 @@ async def on_ready():
     if firstRun == True:
         print("[MESSAGE]: First Run is set to true, syncing slash commands with discord and generating ticket creation embed...")
         print("--------------------------------------------------------------------------------")
-        #await ticket.sync()
+        await ticket.sync()
         tchannel = bot.get_channel(IDOfChannelToSendTicketCreationEmbed)
         embed = discord.Embed(title='''**Create a ticket**''', description=f'Press the button below to create a ticket!', color=embedColor)
         embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
