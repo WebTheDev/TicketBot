@@ -57,7 +57,7 @@ async def on_ready():
         nmessage = await tchannel.send(embed=embed, view=TicketCreation())
         for line in fileinput.input(("./config.py"), inplace=1):
             if "IDofMessageForTicketCreation" in line:
-                line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}\n                       #This variable was automatically adjusted.' )
+                line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.' )
             elif "firstRun" in line:
                 line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.")
             sys.stdout.write(line)
@@ -98,7 +98,7 @@ async def on_ready():
                 nmessage = await tchannel.send(embed=embed, view=TicketCreation())
                 for line in fileinput.input(("./config.py"), inplace=1):
                     if "IDofMessageForTicketCreation" in line:
-                        line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}\n                       #This variable was automatically adjusted.' )
+                        line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.' )
                     sys.stdout.write(line)
                 embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
                 embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
@@ -333,13 +333,13 @@ async def self(interaction:discord.Interaction):
     try:
         author = interaction.user
         guild = interaction.guild
-        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!''', color=embedColor)
+        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!\nThis bot was modified by WebTheDev with love for Rebdamas.''', color=embedColor)
         latency = bot.latency * 1000
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = bot.get_user(debugLogSendID)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value="`v4.2-Public`")
-        embed6.add_field(name="**__Github Repository__**", value="(Click Me!)[https://github.com/WebTheDev/TicketBot]")
+        embed6.add_field(name= "**__Version__**", value="`v4.2-ForReb`")
+        embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
         botCreator = bot.get_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
         embed6.add_field(name="**__Status__**", value=f"Everything is good ✅")
@@ -361,6 +361,33 @@ async def self(interaction:discord.Interaction):
         except discord.HTTPException:
             await web.send("commands.options function fail" + str(e))
         print(text) 
+
+@ticket.command(name = "unlockers", description="Unlockers when they unlock a new model", guild = discord.Object(id = guildID))
+async def self(interaction: discord.Interaction):
+    try:
+        author = interaction.user
+        embed3 = discord.Embed(description="Unlockers when they unlock a new model.", color=embedColor)
+        embed3.set_image(url=f'https://media1.tenor.com/images/8bef9387d276ff616dd6d2c213dc5e56/tenor.gif')
+        embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.avatar}')
+        embed3.set_author(name=f'{author}', icon_url=author.avatar)
+        try:
+            await interaction.response.send_message(embed=embed3)
+        except discord.HTTPException:
+            await interaction.response.send_message(f'''Unlockers when they unlock a new model.\nhttps://media1.tenor.com/images/8bef9387d276ff616dd6d2c213dc5e56/tenor.gif''')
+    except Exception as e:
+        message2 = await interaction.response.send_message(f'{author.mention} a unknown error has occurred, a copy of the error has been sent to the developer ❌')
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatus}')
+        await bot.change_presence(status=discord.Status.dnd, activity=activity1)
+        web = bot.get_user(debugLogSendID)
+        text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))
+        embed = discord.Embed(title='commands.unlockers function fail', description=f'{text}, {str(e)}', color=embedColor)
+        try:
+            await web.send(embed=embed)
+        except discord.HTTPException:
+            await web.send("commands.unlockers function fail" + str(e))
+        print(str(e)) 
+        await asyncio.sleep(10)
+        await message2.delete()
 
 try:
     bot.run(f"{get_token()}")
