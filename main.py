@@ -1,7 +1,7 @@
 import discord, datetime
-import asyncio
 import sys
 import os
+import fileinput
 from discord import app_commands
 from datetime import datetime
 from discord.utils import get
@@ -50,16 +50,17 @@ async def on_ready():
     if firstRun == True:
         print("[MESSAGE]: First Run is set to true, syncing slash commands with discord and generating ticket creation embed...")
         print("--------------------------------------------------------------------------------")
-        await ticket.sync()
+        #await ticket.sync()
+        tchannel = bot.get_channel(IDOfChannelToSendTicketCreationEmbed)
+        embed = discord.Embed(title='''**Create a ticket**''', description=f'Press the button below to create a ticket!', color=embedColor)
+        embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-        configFile = open("config.py", "r")
-        configLines = configFile.readlines()
-        configFile.close()
-        configLines[17] = (f'IDofMessageForTicketCreation = {nmessage.id}\n')
-        configLines[48] = (f"firstRun = False")
-        configFile = open("config.py", "w")
-        configFile.writelines(configLines)
-        configFile.close()
+        for line in fileinput.input(("./config.py"), inplace=1):
+            if "IDofMessageForTicketCreation" in line:
+                line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}\n                       #This variable was automatically adjusted.' )
+            elif "firstRun" in line:
+                line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.")
+            sys.stdout.write(line)
         embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
         embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
         developer = bot.get_user(debugLogSendID)
@@ -95,13 +96,10 @@ async def on_ready():
                 print("[ERROR]: Embed Message not found! Creating a new embed message, please restart the bot if not restarted automatically")
                 print("--------------------------------------------------------------------------------")
                 nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-                configFile = open("config.py", "r")
-                configLines = configFile.readlines()
-                configFile.close()
-                configLines[17] = (f'IDofMessageForTicketCreation = {nmessage.id}\n')
-                configFile = open("config.py", "w")
-                configFile.writelines(configLines)
-                configFile.close()
+                for line in fileinput.input(("./config.py"), inplace=1):
+                    if "IDofMessageForTicketCreation" in line:
+                        line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}\n                       #This variable was automatically adjusted.' )
+                    sys.stdout.write(line)
                 embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
                 embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
                 developer = bot.get_user(debugLogSendID)
