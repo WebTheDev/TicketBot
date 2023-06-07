@@ -45,21 +45,21 @@ class embedButtons(discord.ui.View):
         ticketInfo = TicketData.find(cursor, tchannel.id)
         TicketData.close(connection)
         ltype = (ticketInfo[4])
-        allowedAcess = False
+        allowedAccess = False
         try:
-            for allowedRoles in list(channelPerms[f"{ticketTypeAllowedToCreatePrivateChannels}"]):
+            for allowedRoles in list(channelPerms[f"{ltype}"]):
                 prole = discord.utils.get(guild.roles, id=allowedRoles)
                 if prole in author.roles:
-                    allowedAcess = True
+                    allowedAccess = True
                 else:
                     pass
         except TypeError:
             prole = get(guild.roles, id=channelPerms[f"{ltype}"])
             if prole in author.roles:
-                allowedAcess = True
+                allowedAccess = True
             else:
                 pass
-        if (allowedAcess == True) or (f"{ticketInfo[1]}" == f"{author.id}"):
+        if (allowedAccess == True) or (f"{ticketInfo[1]}" == f"{author.id}"):
             embed6 = discord.Embed(description="Are you sure that you want to close this ticket?", color=embedColor)
             embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
             embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
@@ -115,7 +115,7 @@ class embedButtons(discord.ui.View):
                         lauthor3 = (int(lauthor2))
                         lauthor4 = get(guild.members, id=lauthor3)
                         if lauthor4 == None:
-                            lauthor5 = bot.get_user(lauthor3)
+                            lauthor5 = await bot.fetch_user(lauthor3)
                             if lauthor5 == None:
                                 lauthor = str("N/A") 
                             else:
@@ -139,7 +139,7 @@ class embedButtons(discord.ui.View):
                     if (ticketInfo[2]) != "No":
                         lcstatus = (ticketInfo[2])
                         lcstatus2 = int(lcstatus)
-                        claimer = bot.get_user(lcstatus2)
+                        claimer = await bot.fetch_user(lcstatus2)
                         cstatus = str(f"**Claimed** ({claimer.mention})")
                     else:
                         cstatus = str(f'**Not Claimed**')

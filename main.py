@@ -259,7 +259,7 @@ async def options(interaction: discord.Interaction):
                     lauthor3 = (int(lauthor2))
                     lauthor4 = get(guild.members, id=lauthor3)
                     if lauthor4 == None:
-                        lauthor5 = bot.get_user(lauthor3)
+                        lauthor5 = await bot.fetch_user(lauthor3)
                         if lauthor5 == None:
                            lauthor = str("N/A") 
                         else:
@@ -283,7 +283,7 @@ async def options(interaction: discord.Interaction):
                 if (ticketInfo[2]) != "No":
                     lcstatus = (ticketInfo[2])
                     lcstatus2 = int(lcstatus)
-                    claimer = bot.get_user(lcstatus2)
+                    claimer = await bot.fetch_user(lcstatus2)
                     cstatus = str(f"**Claimed** ({claimer.mention})")
                 else:
                     cstatus = str(f'**Not Claimed**')
@@ -333,14 +333,14 @@ async def self(interaction:discord.Interaction):
     try:
         author = interaction.user
         guild = interaction.guild
-        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!''', color=embedColor)
+        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!\nThis bot was modified by WebTheDev with love for Rebdamas.''', color=embedColor)
         latency = bot.latency * 1000
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
-        botOwner = bot.get_user(debugLogSendID)
+        botOwner = await bot.fetch_user(debugLogSendID)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value="`v4.2-Public`")
+        embed6.add_field(name= "**__Version__**", value="`v4.2.1`")
         embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
-        botCreator = bot.get_user(387002430602346499)
+        botCreator = await bot.fetch_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
         embed6.add_field(name="**__Status__**", value=f"Everything is good ✅")
         embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
@@ -361,6 +361,7 @@ async def self(interaction:discord.Interaction):
         except discord.HTTPException:
             await web.send("commands.options function fail" + str(e))
         print(text) 
+
 
 try:
     bot.run(f"{get_token()}")
