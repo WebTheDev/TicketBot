@@ -333,7 +333,7 @@ async def self(interaction:discord.Interaction):
     try:
         author = interaction.user
         guild = interaction.guild
-        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!\nThis bot was modified by WebTheDev with love for Rebdamas.''', color=embedColor)
+        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!\n''', color=embedColor)
         latency = bot.latency * 1000
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = await bot.fetch_user(debugLogSendID)
