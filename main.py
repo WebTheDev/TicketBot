@@ -57,9 +57,9 @@ async def on_ready():
         nmessage = await tchannel.send(embed=embed, view=TicketCreation())
         for line in fileinput.input(("./config.py"), inplace=1):
             if "IDofMessageForTicketCreation" in line:
-                line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.' )
+                line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
             elif "firstRun" in line:
-                line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.")
+                line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.\n")
             sys.stdout.write(line)
         embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
         embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
@@ -333,12 +333,12 @@ async def self(interaction:discord.Interaction):
     try:
         author = interaction.user
         guild = interaction.guild
-        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!''', color=embedColor)
+        embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!\nThis bot was modified by WebTheDev with love for Rebdamas.''', color=embedColor)
         latency = bot.latency * 1000
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = await bot.fetch_user(debugLogSendID)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value="`v4.2.1`")
+        embed6.add_field(name= "**__Version__**", value="`v4.2.2`")
         embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
         botCreator = await bot.fetch_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
