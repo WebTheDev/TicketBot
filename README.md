@@ -7,7 +7,7 @@
 ---
 ### Screenshots
 
-<p align="center"><img src="https://cdn.discordapp.com/attachments/825594967777869838/1106811576897503282/ticket-bot-demo.gif" /></p><p align="center"><img src="https://media.discordapp.net/attachments/828110039956455444/1107065883756605481/ezgif-5-164059f8ff.gif" /></p>
+<p align="center"><img src="https://tari.blue/assets/img/ticketbot-demo-1.gif" /></p><p align="center"><img src="https://tari.blue/assets/img/ticketbot-demo-2.gif" /></p>
 
 ---
 ### Features
