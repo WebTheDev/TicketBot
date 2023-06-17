@@ -318,97 +318,25 @@ class optionsMenu(discord.ui.View):
         
     @discord.ui.button(label="Archive Ticket", emoji="🗄️", style=discord.ButtonStyle.blurple)
     async def archive(self, interaction:discord.Interaction, button: discord.ui.button):
-        tchannel = interaction.channel
         author = interaction.user
-        guild = interaction.guild
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
-        connection = TicketData.connect()
-        cursor = TicketData.cursor(connection)
-        ticketInfo = TicketData.find(cursor, tchannel.id)
-        categoryn = archivedTicketsCategoryID
-        if tchannel.category_id != categoryn:
-            embed4 = discord.Embed(description=f'Setting Ticket to `Archived` status...', color=embedColor)
-            embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-            try:
-                message3 = await interaction.response.edit_message(embed=embed4, view=None)
-            except discord.HTTPException:
-                message3 = await interaction.response.edit_message(f"Setting Ticket to `Archived` status...", view=None)
-            category = discord.utils.get(guild.categories, id=categoryn)
-            await tchannel.edit(category=category)
-            TicketData.edit(connection, cursor, ticketInfo, ticketInfo[2], "Archived")
-            embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Archived` ✅', color=embedColor)
-            embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-            try:
-                message3 = await tchannel.send(embed=embed1)
-            except discord.HTTPException:
-                message3 = await tchannel.send(f"**This ticket has been set to `Archived` ✅**")
-            embed2 = discord.Embed(title='Ticket set to Archived', description=f'Ticket {tchannel.mention} has been set to `Archived` by {author.mention}', color=embedColor)
-            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-            try:
-                await syslogc.send(embed=embed2)
-            except discord.HTTPException:
-                await syslogc.send(f"Ticket {tchannel.mention} has been set to `Archived` by {author.mention}")   
-        elif tchannel.category_id == categoryn:
-            embed1 = discord.Embed(description=f'This ticket is already set to `Archived`!', color=embedColor)
-            embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-            try:
-                await interaction.response.edit_message(embed=embed1, view=None)
-            except discord.HTTPException:
-                await tchannel.send(f"This ticket is already set to `Archived`!")
-        TicketData.close(connection)
+        embed6 = discord.Embed(description="Are you sure that you want to archive this ticket? This will result in the ticket being moved to the archived category and the ticket will no longer be managed by the ticketbot.", color=embedColor)
+        embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
+        embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        try:
+            await interaction.response.edit_message(embed=embed6, view=ticketArchiveyesOrNoOption(timeout=None))
+        except discord.HTTPException:
+            await interaction.response.edit_message(content="Something weird happened here, try again.")
 
     @discord.ui.button(label="Transcribe Ticket", emoji="📝", style=discord.ButtonStyle.red)
     async def transcribe(self, interaction:discord.Interaction, button: discord.ui.button):
-        tchannel = interaction.channel
-        lchannel = bot.get_channel(ticketTranscriptChannelID)
         author = interaction.user
-        guild = interaction.guild
-        connection = TicketData.connect()
-        cursor = TicketData.cursor(connection)
-        ticketInfo = TicketData.find(cursor, tchannel.id)
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
-        embed4 = discord.Embed(description=f'Transcribing Ticket...', color=embedColor)
-        embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed6 = discord.Embed(description="Are you sure that you want to close this ticket? This will result in the ticket being deleted.", color=embedColor)
+        embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
+        embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
-            await interaction.response.edit_message(embed=embed4, view=None)
+            await interaction.response.edit_message(embed=embed6, view=yesOrNoOption(timeout=None))
         except discord.HTTPException:
-            await interaction.response.edit_message(f"Transcribing Ticket...", )
-        connection = TicketData.connect()
-        cursor = TicketData.cursor(connection)
-        embed3 = discord.Embed(title=f'Ticket Closed', description=f'{author.mention} has closed this ticket, it will be logged and deleted within 5 seconds.', color=embedColor)
-        embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-        try:
-            await tchannel.send(embed=embed3)
-        except discord.HTTPException:
-            await tchannel.send(f"{author.mention} has closed this ticket, it will be logged and deleted within 5 seconds.")
-        await asyncio.sleep(2)
-        transcript = await chat_exporter.export(tchannel)
-        transcript_file = discord.File(io.BytesIO(transcript.encode()),
-                                       filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
-        transcript_message = await lchannel.send(file=transcript_file)
-        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'A open ticket has been marked as closed by {author.mention}, it has been logged and deleted.', color=embedColor)
-        embed2.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
-        embed2.set_author(name=author, icon_url=author.display_avatar)
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
-        embed2.add_field(name='**__Channel Name:__**', value=f'#{tchannel.name}', inline=True)
-        tauthor = await bot.fetch_user(int(ticketInfo[1]))
-        embed2.add_field(name="**__Author:__**", value=f"{tauthor.mention}", inline=True)
-        embed2.add_field(name="**__Type:__**", value=f"{ticketInfo[4]}", inline=True)
-        embed2.add_field(name="**__Time Created:__**", value=f"{ticketInfo[3]}", inline=False)
-        embed2.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message.jump_url}", inline=True)
-        transcript_url = ("https://tari.blue/ticketviewer/?url="+ transcript_message.attachments[0].url)
-        embed2.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url})", inline=True)
-        try:
-            message3 = await syslogc.send(embed=embed2)
-        except discord.HTTPException:
-            message3 = await syslogc.send(f"Ticket Channel **{tchannel.mention}** was closed by {author.mention}, it has been logged and deleted.")
-        await tchannel.delete()
-        TicketData.delete(connection, cursor, tchannel.id)
-        TicketData.close(connection)
+            await interaction.response.edit_message("Something weird happened here, try again.")
 
 
 class yesOrNoOption(discord.ui.View):
@@ -442,23 +370,89 @@ class yesOrNoOption(discord.ui.View):
         transcript_file = discord.File(io.BytesIO(transcript.encode()),
                                        filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
         transcript_message = await lchannel.send(file=transcript_file)
+        tauthor = await bot.fetch_user(int(ticketInfo[1]))
         embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'A open ticket has been marked as closed by {author.mention}, it has been logged and deleted.', color=embedColor)
         embed2.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
         embed2.set_author(name=author, icon_url=author.display_avatar)
         embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         embed2.add_field(name='**__Channel Name:__**', value=f'#{tchannel.name}', inline=True)
-        tauthor = await bot.fetch_user(int(ticketInfo[1]))
         embed2.add_field(name="**__Author:__**", value=f"{tauthor.mention}", inline=True)
         embed2.add_field(name="**__Type:__**", value=f"{ticketInfo[4]}", inline=True)
+        if dmTicketCopies == True:
+            try:
+                transcript_file1 = discord.File(io.BytesIO(transcript.encode()),
+                                       filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
+                transcript_message1 = await tauthor.send(file=transcript_file1)
+                embed3 = discord.Embed(title="Ticket Copy", description=f"Hi {tauthor.mention}!\n Thank you for creating a ticket with us. Attached to this message is a copy of your ticket for your records.\n\nPlease note, any media sent in your ticket will not load in the copy after a couple of days.\n \n ", color=embedColor)
+                embed3.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message1.jump_url}", inline=True)
+                transcript_url1 = ("https://tari.blue/ticketviewer/?url="+ transcript_message1.attachments[0].url)
+                embed3.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url1})", inline=True)
+                embed3.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
+                try:
+                    await tauthor.send(embed=embed3)
+                except discord.HTTPException:
+                    await tauthor.send(f"Hi {tauthor.mention}!\n Thank you for creating a ticket with us. Attached to this message is a copy of your ticket for your records.\nPlease note, any media sent in your ticket will not load in the copy after a couple of days.\n**__Jump/Download Link:__{transcript_message.jump_url}\n**__View Link:__**[Click here!]({transcript_url1})")
+                embed2.add_field(name="**__Copy Status:__**", value="A copy of the ticket was successfully delivered to the ticket creator. ✅")
+            except Exception:
+                embed2.add_field(name="**__Copy Status:__**", value="The copy failed to be delivered to the ticket creator. This is most likely due to their dms being off. ❌")
+        else:
+            pass
         embed2.add_field(name="**__Time Created:__**", value=f"{ticketInfo[3]}", inline=False)
-        embed2.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message.jump_url}", inline=True)
+        embed2.add_field(name="**__Jump/Download Link:__**", value=f"\n{transcript_message.jump_url}", inline=True)
         transcript_url = ("https://tari.blue/ticketviewer/?url="+ transcript_message.attachments[0].url)
-        embed2.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url})", inline=True)
+        embed2.add_field(name="**__View Link:__**", value=f"\n[Click here!]({transcript_url})", inline=True)
         try:
             message3 = await syslogc.send(embed=embed2)
         except discord.HTTPException:
             message3 = await syslogc.send(f"Ticket Channel **{tchannel.mention}** was closed by {author.mention}, it has been logged and deleted.")
         await tchannel.delete()
+        TicketData.delete(connection, cursor, tchannel.id)
+        TicketData.close(connection)
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
+    async def no(self, interaction:discord.Interaction, button: discord.ui.button):
+        author = interaction.user
+        embed4 = discord.Embed(description="Aborting...", color=embedColor)
+        embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
+        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        try:
+            await interaction.response.edit_message(embed=embed4, view=None)
+        except discord.HTTPException:
+            await interaction.response.edit_message("Aborting...", view=None)
+
+class ticketArchiveyesOrNoOption(discord.ui.View):
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
+    async def yes(self, interaction:discord.Interaction, button: discord.ui.button):
+        tchannel = interaction.channel
+        author = interaction.user
+        guild = interaction.guild
+        syslogc = get(guild.channels, id=ticketLogsChannelID)
+        connection = TicketData.connect()
+        cursor = TicketData.cursor(connection)
+        ticketInfo = TicketData.find(cursor, tchannel.id)
+        categoryn = archivedTicketsCategoryID
+        embed4 = discord.Embed(description=f'Setting Ticket to `Archived` status...', color=embedColor)
+        embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
+        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        try:
+            message3 = await interaction.response.edit_message(embed=embed4, view=None)
+        except discord.HTTPException:
+            message3 = await interaction.response.edit_message(f"Setting Ticket to `Archived` status...", view=None)
+        category = discord.utils.get(guild.categories, id=categoryn)
+        await tchannel.edit(category=category)
+        TicketData.edit(connection, cursor, ticketInfo, ticketInfo[2], "Archived")
+        embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Archived` ✅', color=embedColor)
+        embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
+        embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        try:
+            message3 = await tchannel.send(embed=embed1)
+        except discord.HTTPException:
+            message3 = await tchannel.send(f"**This ticket has been set to `Archived` ✅**")
+        embed2 = discord.Embed(title='Ticket set to Archived', description=f'Ticket {tchannel.mention} has been set to `Archived` by {author.mention}', color=embedColor)
+        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        try:
+            await syslogc.send(embed=embed2)
+        except discord.HTTPException:
+            await syslogc.send(f"Ticket {tchannel.mention} has been set to `Archived` by {author.mention}")   
         TicketData.delete(connection, cursor, tchannel.id)
         TicketData.close(connection)
     @discord.ui.button(label="No", style=discord.ButtonStyle.red)

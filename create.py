@@ -60,7 +60,7 @@ class embedButtons(discord.ui.View):
             else:
                 pass
         if (allowedAccess == True) or (f"{ticketInfo[1]}" == f"{author.id}"):
-            embed6 = discord.Embed(description="Are you sure that you want to close this ticket?", color=embedColor)
+            embed6 = discord.Embed(description="Are you sure that you want to close this ticket? This will result in the ticket being deleted.", color=embedColor)
             embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
             embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
@@ -205,7 +205,7 @@ class TicketCreationModal(discord.ui.Modal, title=f"Create a ticket"):
             default_perms[prole] = discord.PermissionOverwrite(read_messages=True, send_messages=True)  
         now = datetime.now().strftime("%m-%d-%Y, %H:%M:%S")
         category = discord.utils.get(guild.categories, id=activeTicketsCategoryID)
-        tchannel = await guild.create_text_channel(name=f'{ticketType}-{author.name}', category=category, overwrites=default_perms, topic=f"Reason: {ticketDescription} | Created by: {author}")
+        tchannel = await guild.create_text_channel(name=f'{ticketType}-{author}', category=category, overwrites=default_perms, topic=f"Reason: {ticketDescription} | Created by: {author}")
         embed3 = discord.Embed(description=f'Your {ticketType} ticket has been created, {tchannel.mention}. A member of our team will be with you shortly.', color=embedColor)
         embed3.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
         embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
@@ -253,9 +253,36 @@ class TicketCreation(discord.ui.View):
     @discord.ui.button(label="Create a new ticket", emoji="📩", style=discord.ButtonStyle.blurple)
     async def presscreate(self, interaction:discord.Interaction, button:discord.ui.button):
         author = interaction.user
-        embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=embedColor)
-        embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
-        await interaction.response.send_message(embed=embed2, view=TicketCreationMenuUI(), ephemeral=True)
+        guild = interaction.guild
+        if multipleTicketsAllowed == False:
+            connection = TicketData.connect()
+            cursor = TicketData.cursor(connection)
+            allTickets = []
+            allTickets = TicketData.getall(cursor, allTickets)
+            alreadyOpened = False
+            for tickets in allTickets:
+                if (int(tickets[1])) == author.id and (str(tickets[5])) != ("Archived"):
+                    alreadyOpened = True
+                    activeChannel = int(tickets[0])
+                    break
+                else:
+                    pass
+            if alreadyOpened == True:
+                achannel = get(guild.channels, id=activeChannel)
+                embed2 = discord.Embed(description=f"You can't have more than one ticket open at a time! Please close your current ticket before opening a new one.", color=embedColor)
+                embed2.add_field(name="**__Open Tickets:__**", value=f"{achannel.mention}")
+                embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
+                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+                await interaction.response.send_message(embed=embed2, ephemeral=True)
+            else:
+                embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=embedColor)
+                embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
+                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+                await interaction.response.send_message(embed=embed2, view=TicketCreationMenuUI(), ephemeral=True)
+        else:
+            embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=embedColor)
+            embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
+            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+            await interaction.response.send_message(embed=embed2, view=TicketCreationMenuUI(), ephemeral=True)
     
 x = dict() 
