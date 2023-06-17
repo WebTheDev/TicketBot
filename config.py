@@ -42,6 +42,9 @@ channelPerms = {                                                                
 
 
 ticketTypeAllowedToCreatePrivateChannels = "staff"                         #Set this to be the type of option (roles) as defined in the ticket channel perms dictionary that can use the /create command.
+multipleTicketsAllowed = False                                             #Set this to True if you would like members to be able to have multiple tickets open at once (otherwise set to False).
+dmTicketCopies = True                                                      #Set this to True if you would like the bot to dm Ticket Creators transcript copies of their ticket.
+
 
 #Embed Config:#
 footerOfEmbeds = ''                                                        #Set a custom embed footer of all embedded messages here!
@@ -54,7 +57,7 @@ def get_token():
     return (data['BotToken'])
 
 
-firstRun = True                                          #This is auto-adjusted, leave set to True on first bot start
+firstRun = True                                          #This is auto-adjusted, leave set to True on first bot start (unless if you are upgrading to a newer version of the bot, then set to False)
 
 
 
