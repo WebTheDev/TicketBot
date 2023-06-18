@@ -233,6 +233,7 @@ class TicketCreationModal(discord.ui.Modal, title=f"Create a ticket"):
             message2 = await tchannel.send(embed=embed1, view=embedButtons(timeout=None))
         except discord.HTTPException as y:
             message2 = await tchannel.send(f"Ticket Created by {author}, Reason: {ticketDescription}", view=embedButtons(timeout=None))
+        await message2.pin()
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         TicketData.add(connection, cursor, tchannel.id, author.id, f"{now} UTC", ticketType, "Active", message2.id)
@@ -261,10 +262,13 @@ class TicketCreation(discord.ui.View):
             allTickets = TicketData.getall(cursor, allTickets)
             alreadyOpened = False
             for tickets in allTickets:
-                if (int(tickets[1])) == author.id and (str(tickets[5])) != ("Archived"):
-                    alreadyOpened = True
-                    activeChannel = int(tickets[0])
-                    break
+                if (int(tickets[1])) == author.id:
+                    if (str(tickets[5])) != ("Archived") and (str(tickets[4])) != ticketTypeAllowedToCreatePrivateChannels:
+                        alreadyOpened = True
+                        activeChannel = int(tickets[0])
+                        break
+                    else:
+                        pass
                 else:
                     pass
             if alreadyOpened == True:
