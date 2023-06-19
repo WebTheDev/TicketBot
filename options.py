@@ -36,20 +36,22 @@ class addMemberModal(discord.ui.Modal, title="Add a member"):
             except discord.HTTPException:
                 await interaction.response.send_message(f'''I couldn't find that member, are you sure that is a valid member id? This is what I got: {self.children[0].value}''', ephemeral=True)
         elif amember != None:
+            allowedAccess = False
             try:
                 for allowedRoles in list(channelPerms[f"{ltype}"]):
                     prole = discord.utils.get(guild.roles, id=allowedRoles)
                     if prole in amember.roles:
-                        allowedAcess = True
+                        allowedAccess = True
+                        break
                     else:
                         pass
             except TypeError:
                 prole = get(guild.roles, id=channelPerms[f"{ltype}"])
-                if prole in author.roles:
-                    allowedAcess = True
+                if prole in amember.roles:
+                    allowedAccess = True
                 else:
                     pass
-            if (allowedAcess == True):
+            if (allowedAccess == True):
                 embed2 = discord.Embed(description=f'''I can't add that member!''', color=embedColor)
                 embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
@@ -103,21 +105,22 @@ class removeMemberModal(discord.ui.Modal, title="Remove a member"):
             except discord.HTTPException:
                 await interaction.response.send_message(f'''I couldn't find that member, are you sure that is a valid member id? This is what I got: {self.children[0].value}''', ephemeral=True)
         elif amember != None:
-            allowedAcess = False
+            allowedAccess = False
             try:
                 for allowedRoles in list(channelPerms[f"{ltype}"]):
                     prole = discord.utils.get(guild.roles, id=allowedRoles)
                     if prole in amember.roles:
-                        allowedAcess = True
+                        allowedAccess = True
+                        break
                     else:
                         pass
             except TypeError:
                 prole = get(guild.roles, id=channelPerms[f"{ltype}"])
-                if prole in author.roles:
-                    allowedAcess = True
+                if prole in amember.roles:
+                    allowedAccess = True
                 else:
                     pass
-            if (allowedAcess == True):
+            if (allowedAccess == True):
                 embed2 = discord.Embed(description=f'''I can't remove that member!''', color=embedColor)
                 embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
