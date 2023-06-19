@@ -339,7 +339,7 @@ async def self(interaction:discord.Interaction):
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = await bot.fetch_user(debugLogSendID)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value="`v4.3.1`")
+        embed6.add_field(name= "**__Version__**", value="`v4.3.2`")
         embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
         botCreator = await bot.fetch_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
