@@ -55,7 +55,7 @@ async def on_ready():
         embed = discord.Embed(title='''**Create a ticket**''', description=f'Press the button below to create a ticket!', color=embedColor)
         embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-        for line in fileinput.input(("./config.py"), inplace=1):
+        for line in fileinput.input(("config.py"), encoding="utf8", inplace=1):
             if "IDofMessageForTicketCreation" in line:
                 line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
             elif "firstRun" in line:
@@ -96,9 +96,9 @@ async def on_ready():
                 print("[ERROR]: Embed Message not found! Creating a new embed message, please restart the bot if not restarted automatically")
                 print("--------------------------------------------------------------------------------")
                 nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-                for line in fileinput.input(("./config.py"), inplace=1):
+                for line in fileinput.input(("config.py"), encoding="utf8", inplace=1):
                     if "IDofMessageForTicketCreation" in line:
-                        line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.' )
+                        line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
                     sys.stdout.write(line)
                 embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
                 embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
@@ -339,7 +339,7 @@ async def self(interaction:discord.Interaction):
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = await bot.fetch_user(debugLogSendID)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value="`v4.3.2`")
+        embed6.add_field(name= "**__Version__**", value="`v4.3.3`")
         embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
         botCreator = await bot.fetch_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
