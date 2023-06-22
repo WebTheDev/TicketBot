@@ -3,6 +3,7 @@
 - A discord bot that is designed to manage and create ticket channels on behalf of server members using the [Rapptz discord.py API](https://github.com/Rapptz/discord.py).
 - Compiled on Python 3.10.  
 - Tested to work on both Windows and Linux.
+- For this bot to work on linux, you will need to update your python version from 3.8 to 3.10 or newer. Optionally, you can run this [bot in a docker environment](https://github.com/WebTheDev/TicketBot/tree/docker), which natively uses the latest version of python.
 
 ---
 ### Screenshots
