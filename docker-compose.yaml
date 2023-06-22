@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  discord-bot:
+    container_name: NAMEOFBOT
+    image: python:NAMEOFBUILTIMAGE
+    restart: unless-stopped
+    volumes:
+      - 'PATHTOBOTFILES:/usr/src/app'
+    deploy:
+      #resources:                 #If you would like to set a resouce limit in the docker environment, uncomment lines 11-14 and adjust the limits to your liking.
+        #limits:
+          #cpus: '0.50'
+          #memory: 512M
+      mode: replicated
+      replicas: 1
