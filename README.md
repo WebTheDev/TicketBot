@@ -1,7 +1,7 @@
 ### Discord-TicketBot 📝
 
 - A discord bot that is designed to manage and create ticket channels on behalf of server members using the [Rapptz discord.py API](https://github.com/Rapptz/discord.py).
-- Compiled on Python 3.8.1.  
+- Compiled on Python 3.10.  
 - Tested to work on both Windows and Linux.
 
 ---
