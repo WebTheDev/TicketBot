@@ -388,7 +388,7 @@ class yesOrNoOption(discord.ui.View):
                 transcript_message1 = await tauthor.send(file=transcript_file1)
                 embed3 = discord.Embed(title="Ticket Copy", description=f"Hi {tauthor.mention}!\n Thank you for creating a ticket with us. Attached to this message is a copy of your ticket for your records.\n\nPlease note, any media sent in your ticket will not load in the copy after a couple of days.\n \n ", color=embedColor)
                 embed3.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message1.jump_url}", inline=True)
-                transcript_url1 = ("https://tari.blue/ticketviewer/?url="+ transcript_message1.attachments[0].url)
+                transcript_url1 = ("https://webthedev.me/ticketviewer/?url="+ transcript_message1.attachments[0].url)
                 embed3.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url1})", inline=True)
                 embed3.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
                 try:
@@ -402,7 +402,7 @@ class yesOrNoOption(discord.ui.View):
             pass
         embed2.add_field(name="**__Time Created:__**", value=f"{ticketInfo[3]}", inline=False)
         embed2.add_field(name="**__Jump/Download Link:__**", value=f"\n{transcript_message.jump_url}", inline=True)
-        transcript_url = ("https://tari.blue/ticketviewer/?url="+ transcript_message.attachments[0].url)
+        transcript_url = ("https://webthedev.me/ticketviewer/?url="+ transcript_message.attachments[0].url)
         embed2.add_field(name="**__View Link:__**", value=f"\n[Click here!]({transcript_url})", inline=True)
         try:
             message3 = await syslogc.send(embed=embed2)
