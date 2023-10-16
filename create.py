@@ -205,7 +205,7 @@ class TicketCreationModal(discord.ui.Modal, title=f"Create a ticket"):
             default_perms[prole] = discord.PermissionOverwrite(read_messages=True, send_messages=True)  
         now = datetime.now().strftime("%m-%d-%Y, %H:%M:%S")
         category = discord.utils.get(guild.categories, id=activeTicketsCategoryID)
-        tchannel = await guild.create_text_channel(name=f'{ticketType}-{author}', category=category, overwrites=default_perms, topic=f"Reason: {ticketDescription} | Created by: {author}")
+        tchannel = await guild.create_text_channel(name=f'{ticketType}-{author.display_name}', category=category, overwrites=default_perms, topic=f"Reason: {ticketDescription} | Created by: {author}")
         embed3 = discord.Embed(description=f'Your {ticketType} ticket has been created, {tchannel.mention}. A member of our team will be with you shortly.', color=embedColor)
         embed3.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
         embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
