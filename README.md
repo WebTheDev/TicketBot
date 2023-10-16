@@ -8,7 +8,7 @@
 ---
 ### Screenshots
 
-<p align="center"><img src="https://tari.blue/assets/img/ticketbot-demo-1.gif" /></p><p align="center"><img src="https://tari.blue/assets/img/ticketbot-demo-2-1.gif" /></p>
+<p align="center"><img src="https://webthedev.me/assets/img/ticketbot-demo-1.gif" /></p><p align="center"><img src="https://webthedev.me/assets/img/ticketbot-demo-2-1.gif" /></p>
 
 ---
 ### Features
