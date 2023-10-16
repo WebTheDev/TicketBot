@@ -55,12 +55,20 @@ async def on_ready():
         embed = discord.Embed(title='''**Create a ticket**''', description=f'Press the button below to create a ticket!', color=embedColor)
         embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-        for line in fileinput.input(("config.py"), encoding="utf8", inplace=1):
-            if "IDofMessageForTicketCreation" in line:
-                line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
-            elif "firstRun" in line:
-                line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.\n")
-            sys.stdout.write(line)
+        try:
+            for line in fileinput.input(("config.py"), encoding="utf8", inplace=1):
+                if "IDofMessageForTicketCreation" in line:
+                    line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
+                elif "firstRun" in line:
+                    line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.\n")
+                sys.stdout.write(line)
+        except Exception:
+            for line in fileinput.input(("config.py"), inplace=1):
+                if "IDofMessageForTicketCreation" in line:
+                    line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
+                elif "firstRun" in line:
+                    line = line.replace(line, "firstRun = False               #This variable was automatically adjusted.\n")
+                sys.stdout.write(line)
         embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
         embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
         developer = bot.get_user(debugLogSendID)
@@ -96,10 +104,16 @@ async def on_ready():
                 print("[ERROR]: Embed Message not found! Creating a new embed message, please restart the bot if not restarted automatically")
                 print("--------------------------------------------------------------------------------")
                 nmessage = await tchannel.send(embed=embed, view=TicketCreation())
-                for line in fileinput.input(("config.py"), encoding="utf8", inplace=1):
-                    if "IDofMessageForTicketCreation" in line:
-                        line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
-                    sys.stdout.write(line)
+                try:
+                    for line in fileinput.input(("config.py"), encoding="utf8", inplace=1):
+                        if "IDofMessageForTicketCreation" in line:
+                            line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
+                        sys.stdout.write(line)
+                except Exception:
+                    for line in fileinput.input(("config.py"), inplace=1):
+                        if "IDofMessageForTicketCreation" in line:
+                            line = line.replace(line, f'IDofMessageForTicketCreation = {nmessage.id}                       #This variable was automatically adjusted.\n' )
+                        sys.stdout.write(line)
                 embed2 = discord.Embed(title='**__Embed Message ID Updated:__**', description=f'New Message ID is: `{nmessage.id}`\n **Please restart the bot if not restarted automatically**', color=embedColor)
                 embed2.set_footer(text=f'{bot.user.name} | {bot.user.id}', icon_url=f'{bot.user.display_avatar}')
                 developer = bot.get_user(debugLogSendID)
@@ -164,7 +178,7 @@ async def self(interaction: discord.Interaction, reason: str = 'Unspecified'):
             guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
             prole: discord.PermissionOverwrite(read_messages=True, send_messages=True)
             }
-            nchannel = await guild.create_text_channel(f'private-{author.name}', category=category, overwrites=overwrites, topic=f'Reason: {reason} | Created by: {author}')
+            nchannel = await guild.create_text_channel(f'private-{author.display_name}', category=category, overwrites=overwrites, topic=f'Reason: {reason} | Created by: {author}')
             embed3 = discord.Embed(description=f'Private Ticket Channel created: {nchannel.mention}', color=embedColor)
             embed3.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
             embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
@@ -339,7 +353,7 @@ async def self(interaction:discord.Interaction):
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = await bot.fetch_user(debugLogSendID)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value="`v4.3.3`")
+        embed6.add_field(name= "**__Version__**", value="`v4.3.6`")
         embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
         botCreator = await bot.fetch_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
@@ -361,6 +375,33 @@ async def self(interaction:discord.Interaction):
             await web.send(embed=embed)
         except discord.HTTPException:
             await web.send("commands.options function fail" + str(e))
+        print(text)
+
+
+@ticket.command(name = "python", description="A easter egg command!")
+async def self(interaction:discord.Interaction):
+    try:
+        author = interaction.user
+        guild = interaction.guild
+        embed = discord.Embed(description=f"DON'T DO IT **{author.display_name}**!!", color=embedColor)
+        embed.set_image(url="https://media.tenor.com/j9rUo2jsSbEAAAAC/do-not-run-python-python-computer.gif")
+        embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.avatar}')
+        embed.set_author(name=f'{author}', icon_url=author.avatar)
+        try:
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        except discord.HTTPException:
+            await interaction.response.send_message("https://media.tenor.com/j9rUo2jsSbEAAAAC/do-not-run-python-python-computer.gif", ephemeral=True)
+    except Exception as e:
+        message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
+        activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
+        await bot.change_presence(status=discord.Status.dnd, activity=activity1)
+        web = bot.get_user(debugLogSendID)
+        text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))
+        embed = discord.Embed(title='commands.python function fail', description=f'{text}, {str(e)}', color=embedColor)
+        try:
+            await web.send(embed=embed)
+        except discord.HTTPException:
+            await web.send("commands.python function fail" + str(e))
         print(text) 
 
 
