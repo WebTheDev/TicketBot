@@ -53,7 +53,7 @@
 
 ---
 ### Creators Note
-- This bot is protected and licensed under the GNU General Public License v3.0. I am not liable for any damage that my bots may cause to your computer or discord server. I have the right to deny support for my bots at anytime for any reason. Even though this bot is open-sourced, it's source-code may be used for inspiration but may not be used for malicious intent.  
+- This bot is protected and licensed under the GNU General Public License v3.0. I am not liable for any damage that my bots may cause to your computer or discord server. I have the right to deny support for my bots at anytime for any reason. Even though this bot is open-sourced, it's source-code may be used for inspiration but may not be used for malicious intent or commercial use.  
 
 - This is the fourth iteration of this bot, all previous versions have been used in private closed environments and will not be released to the public. This is the first public version of this bot.
 
