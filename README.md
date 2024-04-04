@@ -50,7 +50,7 @@
 ---
 ### Known Errors
 - Interaction fail on unknown slash command. (There is no error handling in the API for this yet, therefore a interaction fail will occur on the users side and a compiler error will be outputted to the console)
-
+- Viewing Transcribed Tickets in a Web Browser, discord has restricted the ability to view sent files in a channel in a web browser. I am currently working on a fix to resolve this issue.
 ---
 ### Creators Note
 - This bot is protected and licensed under the GNU General Public License v3.0. I am not liable for any damage that my bots may cause to your computer or discord server. I have the right to deny support for my bots at anytime for any reason. Even though this bot is open-sourced, it's source-code may be used for inspiration but may not be used for malicious intent or commercial use.  
