@@ -3,9 +3,9 @@ import asyncio
 import io
 import chat_exporter
 from discord.utils import get
-from config import *
-from database import *
-from bot import *
+from config import settings
+from utils.database import *
+from bot import bot
 
 class addMemberModal(discord.ui.Modal, title="Add a member"):
     answer = discord.ui.TextInput(label='Place Member ID here', style=discord.TextStyle.short, required=True, max_length=128)
@@ -28,8 +28,8 @@ class addMemberModal(discord.ui.Modal, title="Add a member"):
         except Exception:
             amember = None
         if amember == None:
-            embed = discord.Embed(description=f'''I couldn't find that member, are you sure that is a valid member id? This is what I got: {self.children[0].value}''', color=embedColor)
-            embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed = discord.Embed(description=f'''I couldn't find that member, are you sure that is a valid member id? This is what I got: {self.children[0].value}''', color=settings.embed_color)
+            embed.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             embed.set_author(name=f'{author}', icon_url=author.display_avatar)
             try:
                 await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -38,7 +38,7 @@ class addMemberModal(discord.ui.Modal, title="Add a member"):
         elif amember != None:
             allowedAccess = False
             try:
-                for allowedRoles in list(channelPerms[f"{ltype}"]):
+                for allowedRoles in list(settings.channel_perms[f"{ltype}"]):
                     prole = discord.utils.get(guild.roles, id=allowedRoles)
                     if prole in amember.roles:
                         allowedAccess = True
@@ -46,14 +46,14 @@ class addMemberModal(discord.ui.Modal, title="Add a member"):
                     else:
                         pass
             except TypeError:
-                prole = get(guild.roles, id=channelPerms[f"{ltype}"])
+                prole = get(guild.roles, id=settings.channel_perms[f"{ltype}"])
                 if prole in amember.roles:
                     allowedAccess = True
                 else:
                     pass
             if (allowedAccess == True):
-                embed2 = discord.Embed(description=f'''I can't add that member!''', color=embedColor)
-                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+                embed2 = discord.Embed(description=f'''I can't add that member!''', color=settings.embed_color)
+                embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
                 try:
                     await interaction.response.send_message(embed=embed2, ephemeral=True)
@@ -61,16 +61,16 @@ class addMemberModal(discord.ui.Modal, title="Add a member"):
                     await interaction.response.send_message(f'''I can't add that member!`''', ephemeral=True)
             else:
                 await tchannel.set_permissions(amember, send_messages=True, read_messages=True)
-                embed2 = discord.Embed(description=f'''Member added. ✅''', color=embedColor)
-                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+                embed2 = discord.Embed(description=f'''Member added. ✅''', color=settings.embed_color)
+                embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
                 try:
                     await interaction.response.send_message(embed=embed2, ephemeral=True)
                 except discord.HTTPException:
                     await interaction.response.send_message(f'''Member added. ✅''', ephemeral=True)
-                embed3 = discord.Embed(title="**__Member Added__**", description=f'''{amember.mention} has been added to the ticket by {author.mention}''', color=embedColor)
+                embed3 = discord.Embed(title="**__Member Added__**", description=f'''{amember.mention} has been added to the ticket by {author.mention}''', color=settings.embed_color)
                 embed3.set_thumbnail(url=f'{amember.avatar}')
-                embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+                embed3.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 try:
                     await tchannel.send(embed=embed3)
                 except discord.HTTPException:
@@ -97,8 +97,8 @@ class removeMemberModal(discord.ui.Modal, title="Remove a member"):
         except Exception:
             amember = None
         if amember == None:
-            embed = discord.Embed(description=f'''I couldn't find that member, are you sure that is a valid member id? This is what I got: {self.children[0].value}''', color=embedColor)
-            embed.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed = discord.Embed(description=f'''I couldn't find that member, are you sure that is a valid member id? This is what I got: {self.children[0].value}''', color=settings.embed_color)
+            embed.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             embed.set_author(name=f'{author}', icon_url=author.display_avatar)
             try:
                 await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -107,7 +107,7 @@ class removeMemberModal(discord.ui.Modal, title="Remove a member"):
         elif amember != None:
             allowedAccess = False
             try:
-                for allowedRoles in list(channelPerms[f"{ltype}"]):
+                for allowedRoles in list(settings.channel_perms[f"{ltype}"]):
                     prole = discord.utils.get(guild.roles, id=allowedRoles)
                     if prole in amember.roles:
                         allowedAccess = True
@@ -115,14 +115,14 @@ class removeMemberModal(discord.ui.Modal, title="Remove a member"):
                     else:
                         pass
             except TypeError:
-                prole = get(guild.roles, id=channelPerms[f"{ltype}"])
+                prole = get(guild.roles, id=settings.channel_perms[f"{ltype}"])
                 if prole in amember.roles:
                     allowedAccess = True
                 else:
                     pass
             if (allowedAccess == True):
-                embed2 = discord.Embed(description=f'''I can't remove that member!''', color=embedColor)
-                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+                embed2 = discord.Embed(description=f'''I can't remove that member!''', color=settings.embed_color)
+                embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
                 try:
                     await interaction.response.send_message(embed=embed2, ephemeral=True)
@@ -130,8 +130,8 @@ class removeMemberModal(discord.ui.Modal, title="Remove a member"):
                     await interaction.response.send_message(f'''I can't remove that member!`''', ephemeral=True)
             else:
                 await tchannel.set_permissions(amember, send_messages=False, read_messages=False)
-                embed2 = discord.Embed(description=f'''Member removed. ✅''', color=embedColor)
-                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+                embed2 = discord.Embed(description=f'''Member removed. ✅''', color=settings.embed_color)
+                embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                 embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
                 try:
                     await interaction.response.send_message(embed=embed2, ephemeral=True)
@@ -144,17 +144,17 @@ class renameChannelModal(discord.ui.Modal, title="Rename a Ticket Channel"):
         tchannel = interaction.channel
         author = interaction.user
         if f"{self.children[0].value}" == '':
-            embed4 = discord.Embed(description=f'''You didn't provide a valid answer! Please try again. I got {self.children[0].value}''', color=embedColor)
+            embed4 = discord.Embed(description=f'''You didn't provide a valid answer! Please try again. I got {self.children[0].value}''', color=settings.embed_color)
             embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await interaction.response.send_message(embed=embed4, ephemeral=True)
             except discord.HTTPException:
                 await interaction.response.send_message(f'''You didn't provide a valid answer! Please try again. I got {self.children[0].value}''', ephemeral=True)
         else:
-            embed2 = discord.Embed(description=f'Channel Renamed ✅', color=embedColor)
+            embed2 = discord.Embed(description=f'Channel Renamed ✅', color=settings.embed_color)
             embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             await tchannel.edit(name=self.children[0].value)
             await interaction.response.send_message(embed=embed2, ephemeral=True)
 
@@ -168,34 +168,34 @@ class optionsMenu(discord.ui.View):
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         ticketInfo = TicketData.find(cursor, tchannel.id)
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
+        syslogc = get(guild.channels, id=settings.ticket_logs_channel_id)
         if (ticketInfo[2]) != "No":
-            embed1 = discord.Embed(description=f'This ticket has already been claimed!', color=embedColor)
+            embed1 = discord.Embed(description=f'This ticket has already been claimed!', color=settings.embed_color)
             embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await interaction.response.edit_message(embed=embed1, view=None)
             except discord.HTTPException:
                 await interaction.response.edit_message(f"This ticket has already been claimed!", view=None)
         else:
-            embed3 = discord.Embed(description=f'Ticket Claimed ✅', color=embedColor)
+            embed3 = discord.Embed(description=f'Ticket Claimed ✅', color=settings.embed_color)
             embed3.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed3.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await interaction.response.edit_message(embed=embed3, view=None)
             except discord.HTTPException:
                 await interaction.response.edit_message(f"Ticket Claimed ✅", view=None)
             
-            embed2 = discord.Embed(title="**__Ticket Claimed__**", description=f'''{author.mention} has claimed this ticket.''', color=embedColor)
+            embed2 = discord.Embed(title="**__Ticket Claimed__**", description=f'''{author.mention} has claimed this ticket.''', color=settings.embed_color)
             embed2.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await tchannel.send(embed=embed2)
             except discord.HTTPException:
                 await tchannel.send(f'''**__Ticket Claimed__**\n{author.mention} has claimed this ticket.''')
             TicketData.edit(connection, cursor, ticketInfo, author.id, ticketInfo[5])
-            embed1 = discord.Embed(title='Ticket Claimed', description=f'{author.mention} has claimed ticket {tchannel.mention}', color=embedColor)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed1 = discord.Embed(title='Ticket Claimed', description=f'{author.mention} has claimed ticket {tchannel.mention}', color=settings.embed_color)
+            embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 message2 = await syslogc.send(embed=embed1)
             except discord.HTTPException:
@@ -208,18 +208,18 @@ class optionsMenu(discord.ui.View):
     async def addmember(self, interaction:discord.Interaction, button: discord.ui.button):
         await interaction.response.send_modal(addMemberModal())
         author = interaction.user
-        embed2 = discord.Embed(description=f'You can only push a button once!', color=embedColor)
+        embed2 = discord.Embed(description=f'You can only push a button once!', color=settings.embed_color)
         embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
         await interaction.edit_original_response(embed=embed2, view=None)
 
     @discord.ui.button(label="Remove a member", emoji="👋", style=discord.ButtonStyle.red)
     async def removemember(self, interaction:discord.Interaction, button: discord.ui.button):
         await interaction.response.send_modal(removeMemberModal())
         author = interaction.user
-        embed2 = discord.Embed(description=f'You can only push a button once!', color=embedColor)
+        embed2 = discord.Embed(description=f'You can only push a button once!', color=settings.embed_color)
         embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
         await interaction.edit_original_response(embed=embed2, view=None)
 
     @discord.ui.button(label="Active Ticket", emoji="🟢", style=discord.ButtonStyle.blurple)
@@ -227,15 +227,15 @@ class optionsMenu(discord.ui.View):
         tchannel = interaction.channel
         author = interaction.user
         guild = interaction.guild
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
+        syslogc = get(guild.channels, id=settings.ticket_logs_channel_id)
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         ticketInfo = TicketData.find(cursor, tchannel.id)
-        categoryn = activeTicketsCategoryID
+        categoryn = settings.active_tickets_category_id
         if tchannel.category_id != categoryn:
-            embed4 = discord.Embed(description=f'Setting Ticket to `Active` status...', color=embedColor)
+            embed4 = discord.Embed(description=f'Setting Ticket to `Active` status...', color=settings.embed_color)
             embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 message3 = await interaction.response.edit_message(embed=embed4, view=None)
             except discord.HTTPException:
@@ -243,23 +243,23 @@ class optionsMenu(discord.ui.View):
             category = discord.utils.get(guild.categories, id=categoryn)
             await tchannel.edit(category=category)
             TicketData.edit(connection, cursor, ticketInfo, ticketInfo[2], "Active")
-            embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Active` ✅', color=embedColor)
+            embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Active` ✅', color=settings.embed_color)
             embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 message3 = await tchannel.send(embed=embed1)
             except discord.HTTPException:
                 message3 = await tchannel.send(f"**This ticket has been set to `Active` ✅**")
-            embed2 = discord.Embed(title='Ticket set to Active', description=f'Ticket {tchannel.mention} has been set to `Active` by {author.mention}', color=embedColor)
-            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed2 = discord.Embed(title='Ticket set to Active', description=f'Ticket {tchannel.mention} has been set to `Active` by {author.mention}', color=settings.embed_color)
+            embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await syslogc.send(embed=embed2)
             except discord.HTTPException:
                 await syslogc.send(f"Ticket {tchannel.mention} has been set to `Active` by {author.mention}")   
         elif tchannel.category_id == categoryn:
-            embed1 = discord.Embed(description=f'This ticket is already set to `Active`!', color=embedColor)
+            embed1 = discord.Embed(description=f'This ticket is already set to `Active`!', color=settings.embed_color)
             embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await interaction.response.edit_message(embed=embed1, view=None)
             except discord.HTTPException:
@@ -271,15 +271,15 @@ class optionsMenu(discord.ui.View):
         tchannel = interaction.channel
         author = interaction.user
         guild = interaction.guild
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
+        syslogc = get(guild.channels, id=settings.ticket_logs_channel_id)
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         ticketInfo = TicketData.find(cursor, tchannel.id)
-        categoryn = onHoldTicketsCategoryID
+        categoryn = settings.on_hold_tickets_category_id
         if tchannel.category_id != categoryn:
-            embed4 = discord.Embed(description=f'Setting Ticket to `Onhold` status...', color=embedColor)
+            embed4 = discord.Embed(description=f'Setting Ticket to `Onhold` status...', color=settings.embed_color)
             embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 message3 = await interaction.response.edit_message(embed=embed4, view=None)
             except discord.HTTPException:
@@ -287,23 +287,23 @@ class optionsMenu(discord.ui.View):
             category = discord.utils.get(guild.categories, id=categoryn)
             await tchannel.edit(category=category)
             TicketData.edit(connection, cursor, ticketInfo, ticketInfo[2], "Onhold")
-            embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Onhold` ✅', color=embedColor)
+            embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Onhold` ✅', color=settings.embed_color)
             embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 message3 = await tchannel.send(embed=embed1)
             except discord.HTTPException:
                 message3 = await tchannel.send(f"**This ticket has been set to `Onhold` ✅**")
-            embed2 = discord.Embed(title='Ticket set to Onhold', description=f'Ticket {tchannel.mention} has been set to `Onhold` by {author.mention}', color=embedColor)
-            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed2 = discord.Embed(title='Ticket set to Onhold', description=f'Ticket {tchannel.mention} has been set to `Onhold` by {author.mention}', color=settings.embed_color)
+            embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await syslogc.send(embed=embed2)
             except discord.HTTPException:
                 await syslogc.send(f"Ticket {tchannel.mention} has been set to `Onhold` by {author.mention}")   
         elif tchannel.category_id == categoryn:
-            embed1 = discord.Embed(description=f'This ticket is already set to `Onhold`!', color=embedColor)
+            embed1 = discord.Embed(description=f'This ticket is already set to `Onhold`!', color=settings.embed_color)
             embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await interaction.response.edit_message(embed=embed1, view=None)
             except discord.HTTPException:
@@ -314,17 +314,17 @@ class optionsMenu(discord.ui.View):
     async def rename(self, interaction:discord.Interaction, button: discord.ui.button):
         await interaction.response.send_modal(renameChannelModal())
         author = interaction.user
-        embed2 = discord.Embed(description=f'You can only select a button once!', color=embedColor)
+        embed2 = discord.Embed(description=f'You can only select a button once!', color=settings.embed_color)
         embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
         await interaction.edit_original_response(embed=embed2, view=None)
         
     @discord.ui.button(label="Archive Ticket", emoji="🗄️", style=discord.ButtonStyle.blurple)
     async def archive(self, interaction:discord.Interaction, button: discord.ui.button):
         author = interaction.user
-        embed6 = discord.Embed(description="Are you sure that you want to archive this ticket? This will result in the ticket being moved to the archived category and the ticket will no longer be managed by the ticketbot.", color=embedColor)
+        embed6 = discord.Embed(description="Are you sure that you want to archive this ticket? This will result in the ticket being moved to the archived category and the ticket will no longer be managed by the ticketbot.", color=settings.embed_color)
         embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed6.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await interaction.response.edit_message(embed=embed6, view=ticketArchiveyesOrNoOption(timeout=None))
         except discord.HTTPException:
@@ -333,9 +333,9 @@ class optionsMenu(discord.ui.View):
     @discord.ui.button(label="Transcribe Ticket", emoji="📝", style=discord.ButtonStyle.red)
     async def transcribe(self, interaction:discord.Interaction, button: discord.ui.button):
         author = interaction.user
-        embed6 = discord.Embed(description="Are you sure that you want to close this ticket? This will result in the ticket being deleted.", color=embedColor)
+        embed6 = discord.Embed(description="Are you sure that you want to close this ticket? This will result in the ticket being deleted.", color=settings.embed_color)
         embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed6.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await interaction.response.edit_message(embed=embed6, view=yesOrNoOption(timeout=None))
         except discord.HTTPException:
@@ -346,24 +346,24 @@ class yesOrNoOption(discord.ui.View):
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
     async def yes(self, interaction:discord.Interaction, button: discord.ui.button):
         tchannel = interaction.channel
-        lchannel = bot.get_channel(ticketTranscriptChannelID)
+        lchannel = bot.get_channel(settings.ticket_transcript_channel_id)
         author = interaction.user
         guild = interaction.guild
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         ticketInfo = TicketData.find(cursor, tchannel.id)
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
-        embed4 = discord.Embed(description=f'Transcribing Ticket...', color=embedColor)
+        syslogc = get(guild.channels, id=settings.ticket_logs_channel_id)
+        embed4 = discord.Embed(description=f'Transcribing Ticket...', color=settings.embed_color)
         embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await interaction.response.edit_message(embed=embed4, view=None)
         except discord.HTTPException:
             await interaction.response.edit_message(f"Transcribing Ticket...", )
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
-        embed3 = discord.Embed(title=f'Ticket Closed', description=f'{author.mention} has closed this ticket, it will be logged and deleted within 5 seconds.', color=embedColor)
-        embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed3 = discord.Embed(title=f'Ticket Closed', description=f'{author.mention} has closed this ticket, it will be logged and deleted within 5 seconds.', color=settings.embed_color)
+        embed3.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await tchannel.send(embed=embed3)
         except discord.HTTPException:
@@ -374,19 +374,19 @@ class yesOrNoOption(discord.ui.View):
                                        filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
         transcript_message = await lchannel.send(file=transcript_file)
         tauthor = await bot.fetch_user(int(ticketInfo[1]))
-        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'A open ticket has been marked as closed by {author.mention}, it has been logged and deleted.', color=embedColor)
+        embed2 = discord.Embed(title=f'Ticket Transcribed', description=f'A open ticket has been marked as closed by {author.mention}, it has been logged and deleted.', color=settings.embed_color)
         embed2.set_thumbnail(url="https://static-00.iconduck.com/assets.00/memo-emoji-1948x2048-bgnk0vsq.png")
         embed2.set_author(name=author, icon_url=author.display_avatar)
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         embed2.add_field(name='**__Channel Name:__**', value=f'#{tchannel.name}', inline=True)
         embed2.add_field(name="**__Author:__**", value=f"{tauthor.mention}", inline=True)
         embed2.add_field(name="**__Type:__**", value=f"{ticketInfo[4]}", inline=True)
-        if dmTicketCopies == True:
+        if settings.dm_ticket_copies == True:
             try:
                 transcript_file1 = discord.File(io.BytesIO(transcript.encode()),
                                        filename=f"transcript-{tchannel.name}_{tchannel.id}.html") 
                 transcript_message1 = await tauthor.send(file=transcript_file1)
-                embed3 = discord.Embed(title="Ticket Copy", description=f"Hi {tauthor.mention}!\n Thank you for creating a ticket with us. Attached to this message is a copy of your ticket for your records.\n\nPlease note, any media sent in your ticket will not load in the copy after a couple of days.\n \n ", color=embedColor)
+                embed3 = discord.Embed(title="Ticket Copy", description=f"Hi {tauthor.mention}!\n Thank you for creating a ticket with us. Attached to this message is a copy of your ticket for your records.\n\nPlease note, any media sent in your ticket will not load in the copy after a couple of days.\n \n ", color=settings.embed_color)
                 embed3.add_field(name="**__Jump/Download Link:__**", value=f"{transcript_message1.jump_url}", inline=True)
                 transcript_url1 = ("https://webthedev.me/ticketviewer/?url="+ transcript_message1.attachments[0].url)
                 embed3.add_field(name="**__View Link:__**", value=f"[Click here!]({transcript_url1})", inline=True)
@@ -414,9 +414,9 @@ class yesOrNoOption(discord.ui.View):
     @discord.ui.button(label="No", style=discord.ButtonStyle.red)
     async def no(self, interaction:discord.Interaction, button: discord.ui.button):
         author = interaction.user
-        embed4 = discord.Embed(description="Aborting...", color=embedColor)
+        embed4 = discord.Embed(description="Aborting...", color=settings.embed_color)
         embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await interaction.response.edit_message(embed=embed4, view=None)
         except discord.HTTPException:
@@ -428,14 +428,14 @@ class ticketArchiveyesOrNoOption(discord.ui.View):
         tchannel = interaction.channel
         author = interaction.user
         guild = interaction.guild
-        syslogc = get(guild.channels, id=ticketLogsChannelID)
+        syslogc = get(guild.channels, id=settings.ticket_logs_channel_id)
         connection = TicketData.connect()
         cursor = TicketData.cursor(connection)
         ticketInfo = TicketData.find(cursor, tchannel.id)
-        categoryn = archivedTicketsCategoryID
-        embed4 = discord.Embed(description=f'Setting Ticket to `Archived` status...', color=embedColor)
+        categoryn = settings.archived_tickets_category_id
+        embed4 = discord.Embed(description=f'Setting Ticket to `Archived` status...', color=settings.embed_color)
         embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             message3 = await interaction.response.edit_message(embed=embed4, view=None)
         except discord.HTTPException:
@@ -443,15 +443,15 @@ class ticketArchiveyesOrNoOption(discord.ui.View):
         category = discord.utils.get(guild.categories, id=categoryn)
         await tchannel.edit(category=category)
         TicketData.edit(connection, cursor, ticketInfo, ticketInfo[2], "Archived")
-        embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Archived` ✅', color=embedColor)
+        embed1 = discord.Embed(title='__**Ticket Status Changed**__', description=f'This ticket has been set to `Archived` ✅', color=settings.embed_color)
         embed1.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             message3 = await tchannel.send(embed=embed1)
         except discord.HTTPException:
             message3 = await tchannel.send(f"**This ticket has been set to `Archived` ✅**")
-        embed2 = discord.Embed(title='Ticket set to Archived', description=f'Ticket {tchannel.mention} has been set to `Archived` by {author.mention}', color=embedColor)
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed2 = discord.Embed(title='Ticket set to Archived', description=f'Ticket {tchannel.mention} has been set to `Archived` by {author.mention}', color=settings.embed_color)
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await syslogc.send(embed=embed2)
         except discord.HTTPException:
@@ -461,9 +461,9 @@ class ticketArchiveyesOrNoOption(discord.ui.View):
     @discord.ui.button(label="No", style=discord.ButtonStyle.red)
     async def no(self, interaction:discord.Interaction, button: discord.ui.button):
         author = interaction.user
-        embed4 = discord.Embed(description="Aborting...", color=embedColor)
+        embed4 = discord.Embed(description="Aborting...", color=settings.embed_color)
         embed4.set_author(name=f'{author}', icon_url=author.display_avatar)
-        embed4.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed4.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await interaction.response.edit_message(embed=embed4, view=None)
         except discord.HTTPException:

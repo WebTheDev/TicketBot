@@ -3,16 +3,16 @@ import asyncio
 import sys
 from datetime import datetime
 from discord.utils import get
-from config import *
-from database import *
-from bot import * 
-from options import *
+from config import settings
+from utils.database import *
+from bot import bot
+from functions.options import *
 
 class TicketCreationMenu(discord.ui.Select):
 
     def __init__(self):
         def optionsList():
-            listofOptions = list(OptionsDict.values())
+            listofOptions = list(settings.options_dict.values())
             oList = []
             for presets in listofOptions:
                 oList.append(discord.SelectOption(label=presets[0], value=presets[1], description=presets[2]))
@@ -23,9 +23,9 @@ class TicketCreationMenu(discord.ui.Select):
         author = interaction.user
         x[interaction.user.display_name] = f"{self.values[0]}"
         await interaction.response.send_modal(TicketCreationModal())
-        embed2 = discord.Embed(description=f'You can only select an option once!', color=embedColor)
+        embed2 = discord.Embed(description=f'You can only select an option once!', color=settings.embed_color)
         embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
         await interaction.edit_original_response(embed=embed2, view=None)
 
 
@@ -47,30 +47,30 @@ class embedButtons(discord.ui.View):
         ltype = (ticketInfo[4])
         allowedAccess = False
         try:
-            for allowedRoles in list(channelPerms[f"{ltype}"]):
+            for allowedRoles in list(settings.channel_perms[f"{ltype}"]):
                 prole = discord.utils.get(guild.roles, id=allowedRoles)
                 if prole in author.roles:
                     allowedAccess = True
                 else:
                     pass
         except TypeError:
-            prole = get(guild.roles, id=channelPerms[f"{ltype}"])
+            prole = get(guild.roles, id=settings.channel_perms[f"{ltype}"])
             if prole in author.roles:
                 allowedAccess = True
             else:
                 pass
         if (allowedAccess == True) or (f"{ticketInfo[1]}" == f"{author.id}"):
-            embed6 = discord.Embed(description="Are you sure that you want to close this ticket? This will result in the ticket being deleted.", color=embedColor)
+            embed6 = discord.Embed(description="Are you sure that you want to close this ticket? This will result in the ticket being deleted.", color=settings.embed_color)
             embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
-            embed6.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+            embed6.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
             try:
                 await interaction.response.send_message(embed=embed6, view=yesOrNoOption(timeout=None), ephemeral=True)
             except discord.HTTPException:
                 await interaction.response.send_message("Something weird happened here, try again.")
         else:
-            embed5 = discord.Embed(description=f'''Only the author of the ticket can use this button!''', color=embedColor)
+            embed5 = discord.Embed(description=f'''Only the author of the ticket can use this button!''', color=settings.embed_color)
             embed5.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-            embed5.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+            embed5.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
             try:
                 await interaction.response.send_message(embed=embed5, ephemeral=True)
             except discord.HTTPException:
@@ -83,7 +83,7 @@ class embedButtons(discord.ui.View):
             author = interaction.user
             roleList = []
             permissionGranted = False
-            for roleids in channelPerms.values():
+            for roleids in settings.channel_perms.values():
                 roleList.append(roleids)
             for allowedRoles in roleList:
                 arole = get(guild.roles, id=allowedRoles)
@@ -98,7 +98,7 @@ class embedButtons(discord.ui.View):
                 ticketInfo = TicketData.find(cursor, tchannel.id)
                 TicketData.close(connection)
                 if ticketInfo != None:
-                    acategory = discord.utils.get(guild.categories, id=archivedTicketsCategoryID)
+                    acategory = discord.utils.get(guild.categories, id=settings.archived_tickets_category_id)
                     acategoryc = (50 - (len(acategory.channels)))
                     if acategoryc == 0:
                         acategoryc2 = str(f'{acategoryc} slots left (full)')
@@ -109,7 +109,7 @@ class embedButtons(discord.ui.View):
                     elif acategoryc >= 6:
                         acategoryc2 = str(f'{acategoryc} slots left')
                     text = str(f'''🚩- Claim a ticket\n\n👥- Add a member to the ticket\n\n👋- Remove a member from the ticket\n\n🟢- Mark a ticket as active\n\n✋- Mark a ticket as onhold\n\n📓- Rename a ticket channel\n\n🗄️- Place a ticket in the archives **({acategoryc2})**\n\n📝- Transcribe and delete a ticket                        ''')
-                    embed3 = discord.Embed(title='''**Ticket Options**''', description=f'{text}', color=embedColor)
+                    embed3 = discord.Embed(title='''**Ticket Options**''', description=f'{text}', color=settings.embed_color)
                     try:
                         lauthor2 = (ticketInfo[1])
                         lauthor3 = (int(lauthor2))
@@ -149,34 +149,34 @@ class embedButtons(discord.ui.View):
                         text2 = str(f'''**__Author:__** {lauthor.mention}\n**__Type:__** {ltype}\n**__Status:__** {lstatus}\n**__Creation Date/Time:__** {lcreation}\n**__Claim Status:__** {cstatus}''')
                     embed3.add_field(name="Ticket Infomation:", value=f"{text2}")
                     embed3.set_author(name=f'{author}', icon_url=author.display_avatar)
-                    embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+                    embed3.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
                     try:
                         await interaction.response.send_message(embed=embed3, ephemeral=True, view=optionsMenu())
                     except discord.HTTPException:
                         await interaction.response.send_message("HTTP Error that I'm too lazy to type out. Try again.", ephemeral=True)
                 else:
-                    embed5 = discord.Embed(description=f'''You can only use this command in a ticket channel!''', color=embedColor)
+                    embed5 = discord.Embed(description=f'''You can only use this command in a ticket channel!''', color=settings.embed_color)
                     embed5.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-                    embed5.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+                    embed5.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
                     try:
                         await interaction.response.send_message(embed=embed5, ephemeral=True)
                     except discord.HTTPException:
                         await interaction.response.send_message(f'''**You can only use this command in a ticket channel!****''')
             else:
-                embed5 = discord.Embed(description=f'''You can't use that command!''', color=embedColor)
+                embed5 = discord.Embed(description=f'''You can't use that command!''', color=settings.embed_color)
                 embed5.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-                embed5.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+                embed5.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
                 try:
                     await interaction.response.send_message(embed=embed5, ephemeral=True)
                 except discord.HTTPException:
                     await interaction.response.send_message(f'''**You can't use that command!****''')
         except Exception as e:
             message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the developer ❌', ephemeral=True)
-            activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{botStatusMessage}')
+            activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{settings.bot_status_message}')
             await bot.change_presence(status=discord.Status.dnd, activity=activity1)
-            web = bot.get_user(debugLogSendID)
+            web = bot.get_user(settings.debug_log_send_id)
             text = str('''Error on line {}'''.format(sys.exc_info()[-1].tb_lineno))
-            embed = discord.Embed(title='commands.options function fail', description=f'{text}, {str(e)}', color=embedColor)
+            embed = discord.Embed(title='commands.options function fail', description=f'{text}, {str(e)}', color=settings.embed_color)
             try:
                 await web.send(embed=embed)
             except discord.HTTPException:
@@ -190,45 +190,45 @@ class TicketCreationModal(discord.ui.Modal, title=f"Create a ticket"):
         ticketType = (x.get(interaction.user.display_name))
         author = interaction.user
         ticketDescription = (self.children[0].value)
-        guild = bot.get_guild(guildID)
+        guild = bot.get_guild(settings.guild_id)
         me = bot.get_user(bot.user.id)
         default_perms = {}
         default_perms[guild.default_role] = discord.PermissionOverwrite(read_messages=False)
         default_perms[me] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
         default_perms[author] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
         try:
-            for allowedRoles in list(channelPerms[f"{ticketType}"]):
+            for allowedRoles in list(settings.channel_perms[f"{ticketType}"]):
                 prole = get(guild.roles, id=allowedRoles)
                 default_perms[prole] = discord.PermissionOverwrite(read_messages=True, send_messages=True)       
         except TypeError:
-            prole = get(guild.roles, id=channelPerms[f"{ticketType}"])
+            prole = get(guild.roles, id=settings.channel_perms[f"{ticketType}"])
             default_perms[prole] = discord.PermissionOverwrite(read_messages=True, send_messages=True)  
         now = datetime.now().strftime("%m-%d-%Y, %H:%M:%S")
-        category = discord.utils.get(guild.categories, id=activeTicketsCategoryID)
+        category = discord.utils.get(guild.categories, id=settings.active_tickets_category_id)
         tchannel = await guild.create_text_channel(name=f'{ticketType}-{author.display_name}', category=category, overwrites=default_perms, topic=f"Reason: {ticketDescription} | Created by: {author}")
-        embed3 = discord.Embed(description=f'Your {ticketType} ticket has been created, {tchannel.mention}. A member of our team will be with you shortly.', color=embedColor)
+        embed3 = discord.Embed(description=f'Your {ticketType} ticket has been created, {tchannel.mention}. A member of our team will be with you shortly.', color=settings.embed_color)
         embed3.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-        embed3.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+        embed3.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         try:
             await interaction.response.send_message(embed=embed3, ephemeral=True)
         except discord.HTTPException:
             await interaction.response.send_message(f'Your {ticketType} ticket has been created, {tchannel.mention}. A member of our team will be with you shortly.', ephemeral=True)
         messageString = ""
         try:
-            for rolesToPing in list(channelPerms[f"{ticketType}"]):
+            for rolesToPing in list(settings.channel_perms[f"{ticketType}"]):
                 prole = get(guild.roles, id=rolesToPing)
                 messageString = messageString + (f" {prole.mention}")
             await tchannel.send(messageString)
         except TypeError:
-            prole = get(guild.roles, id=channelPerms[ticketType])
+            prole = get(guild.roles, id=settings.channel_perms[ticketType])
             await tchannel.send(f'{prole.mention}')
-        embed1 = discord.Embed(title='Ticket Created', description=f'{author.mention} has created a new {ticketType} ticket', color=embedColor)
+        embed1 = discord.Embed(title='Ticket Created', description=f'{author.mention} has created a new {ticketType} ticket', color=settings.embed_color)
         embed1.add_field(name=f'Reason:', value=f'{ticketDescription}')
         try:
             embed1.set_thumbnail(url=f'{author.display_avatar}')
         except Exception:
             pass
-        embed1.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=bot.user.display_avatar)
+        embed1.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=bot.user.display_avatar)
         try:
             message2 = await tchannel.send(embed=embed1, view=embedButtons(timeout=None))
         except discord.HTTPException as y:
@@ -238,12 +238,12 @@ class TicketCreationModal(discord.ui.Modal, title=f"Create a ticket"):
         cursor = TicketData.cursor(connection)
         TicketData.add(connection, cursor, tchannel.id, author.id, f"{now} UTC", ticketType, "Active", message2.id)
         TicketData.close(connection)
-        embed2 = discord.Embed(title='Ticket Created', description=f'{author.mention} has created a new ticket', color=embedColor)
+        embed2 = discord.Embed(title='Ticket Created', description=f'{author.mention} has created a new ticket', color=settings.embed_color)
         embed2.add_field(name='Channel:', value=f'{tchannel.mention}', inline=False)
         embed2.add_field(name=f'Reason:', value=f'{ticketDescription}', inline=False)
         embed2.add_field(name='Type:', value=f'{ticketType}', inline=False)
-        embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=bot.user.display_avatar)
-        syslogc = await bot.fetch_channel(ticketLogsChannelID)
+        embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=bot.user.display_avatar)
+        syslogc = await bot.fetch_channel(settings.ticket_logs_channel_id)
         try:
             message3 = await syslogc.send(embed=embed2)
         except discord.HTTPException:
@@ -255,7 +255,7 @@ class TicketCreation(discord.ui.View):
     async def presscreate(self, interaction:discord.Interaction, button:discord.ui.button):
         author = interaction.user
         guild = interaction.guild
-        if multipleTicketsAllowed == False:
+        if settings.multiple_tickets_allowed == False:
             connection = TicketData.connect()
             cursor = TicketData.cursor(connection)
             allTickets = []
@@ -263,7 +263,7 @@ class TicketCreation(discord.ui.View):
             alreadyOpened = False
             for tickets in allTickets:
                 if (int(tickets[1])) == author.id:
-                    if (str(tickets[5])) != ("Archived") and (str(tickets[4])) != ticketTypeAllowedToCreatePrivateChannels:
+                    if (str(tickets[5])) != ("Archived") and (str(tickets[4])) != settings.ticket_type_allowed_to_create_private_channels:
                         alreadyOpened = True
                         activeChannel = int(tickets[0])
                         break
@@ -273,20 +273,20 @@ class TicketCreation(discord.ui.View):
                     pass
             if alreadyOpened == True:
                 achannel = get(guild.channels, id=activeChannel)
-                embed2 = discord.Embed(description=f"You can't have more than one ticket open at a time! Please close your current ticket before opening a new one.", color=embedColor)
+                embed2 = discord.Embed(description=f"You can't have more than one ticket open at a time! Please close your current ticket before opening a new one.", color=settings.embed_color)
                 embed2.add_field(name="**__Open Tickets:__**", value=f"{achannel.mention}")
                 embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+                embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
                 await interaction.response.send_message(embed=embed2, ephemeral=True)
             else:
-                embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=embedColor)
+                embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=settings.embed_color)
                 embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-                embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+                embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
                 await interaction.response.send_message(embed=embed2, view=TicketCreationMenuUI(), ephemeral=True)
         else:
-            embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=embedColor)
+            embed2 = discord.Embed(description=f'Hi there {author.name}! Please select a ticket option from the drop-down list below!', color=settings.embed_color)
             embed2.set_author(name=f'{author}', icon_url=f'{author.display_avatar}')
-            embed2.set_footer(text=f"{footerOfEmbeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
+            embed2.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')  
             await interaction.response.send_message(embed=embed2, view=TicketCreationMenuUI(), ephemeral=True)
     
 x = dict() 

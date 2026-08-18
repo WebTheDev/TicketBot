@@ -1,10 +1,10 @@
 import sqlite3
-from config import databaseName
+from config import settings
 
 class TicketData():
 
     def connect():
-        con = sqlite3.connect(f"./{databaseName}")
+        con = sqlite3.connect(f"./{settings.database_name}")
         return con
 
     def cursor(connection):

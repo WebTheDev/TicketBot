@@ -1,0 +1,22 @@
+[project]
+name = "ticketbot"
+version = "4.4.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Luke S", email = "web@webthedev.me" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "chat-exporter>=3.1.0",
+    "discord>=2.3.2",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+]
+
+[project.scripts]
+ticketbot = "ticketbot:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
