@@ -1,0 +1,5 @@
+uv.lock
+.env
+.claude
+CLAUDE.md
+*.pyc
