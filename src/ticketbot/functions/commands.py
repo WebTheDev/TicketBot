@@ -1,15 +1,18 @@
 import sys
 import discord
-from datetime import datetime
+from datetime import UTC, datetime
 from discord.utils import get
-from config import settings
-from bot import bot, ticket
-from utils.database import TicketData
-from create import embedButtons, optionsMenu
-from utils.helpers import get_project_version
+from ticketbot.utils.runtime_config import settings
+from ticketbot.bot import bot, ticket
+from ticketbot.models import TicketStatus
+from ticketbot.utils.database import TicketRepository, health as database_health
+from ticketbot.functions.create import embedButtons
+from ticketbot.functions.options import optionsMenu
+from ticketbot.utils.helpers import format_created_at, get_project_version, overall_status
+from ticketbot.utils.updates import check_for_updates as check_github_for_updates
 
-@ticket.command(name = "sync", description="Syncs the Ticket Command Tree to Discord.")
-async def self(interaction: discord.Interaction):
+@ticket.command(name = "sync", description="Sync my command tree to Discord")
+async def sync_command(interaction: discord.Interaction):
     author = interaction.user
     if author.id == settings.debug_log_send_id:
         embed1 = discord.Embed(description=f'Syncing Commands to Discord...', color=settings.embed_color)
@@ -30,8 +33,8 @@ async def self(interaction: discord.Interaction):
     else:
         pass
 
-@ticket.command(name = "create", description="Creates a private ticket channel")
-async def self(interaction: discord.Interaction, reason: str = 'Unspecified'):
+@ticket.command(name = "create", description="Create a private ticket channel for you")
+async def create_command(interaction: discord.Interaction, reason: str = 'Unspecified'):
     try:
         author = interaction.user
         guild = interaction.guild
@@ -77,14 +80,11 @@ async def self(interaction: discord.Interaction, reason: str = 'Unspecified'):
             await message10.delete()
             try:
                 message3 = await nchannel.send(embed=embed1, view=embedButtons())
-            except discord.HTTPException as y:
+            except discord.HTTPException:
                 message3 = await nchannel.send(f"Ticket Created by {author}, Reason: {reason}", view=embedButtons())
             await message3.pin()
-            connection = TicketData.connect()
-            cursor = TicketData.cursor(connection)
-            now = datetime.now().strftime("%m-%d-%Y, %H:%M:%S")
-            TicketData.add(connection, cursor, nchannel.id, author.id, f'{now} EST', settings.ticket_type_allowed_to_create_private_channels, "active", message3.id)
-            TicketData.close(connection)
+            now = datetime.now(UTC)
+            await TicketRepository.add(nchannel.id, author.id, now, settings.ticket_type_allowed_to_create_private_channels, TicketStatus.ACTIVE, message3.id)
             embed2 = discord.Embed(title='Ticket Created', description=f'{author.mention} has created a new ticket', color=settings.embed_color)
             embed2.add_field(name='Channel:', value=f'{nchannel.mention}', inline=False)
             embed2.add_field(name=f'Reason:', value=f'{reason}', inline=False)
@@ -103,7 +103,7 @@ async def self(interaction: discord.Interaction, reason: str = 'Unspecified'):
             except discord.HTTPException:
                 await interaction.response.send_message(f'''{author.mention}, **you can't use that command! ❌**''', ephemeral=True)    
     except Exception as e:
-        message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
+        await interaction.response.send_message('A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
         activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{settings.bot_status_message}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(settings.debug_log_send_id)
@@ -115,7 +115,7 @@ async def self(interaction: discord.Interaction, reason: str = 'Unspecified'):
             await web.send("commands.options function fail" + str(e))
         print(text) 
 
-@ticket.command(name = "options", description="Displays the options for a ticket channel")
+@ticket.command(name = "options", description="Show you my options for this ticket channel")
 async def options(interaction: discord.Interaction):
     try:
         guild = interaction.guild
@@ -124,7 +124,7 @@ async def options(interaction: discord.Interaction):
         roleList = []
         permissionGranted = False
         for roleids in settings.channel_perms.values():
-            roleList.append(roleids)
+            roleList.extend(roleids)
         for allowedRoles in roleList:
             arole = get(guild.roles, id=allowedRoles)
             if arole in author.roles:
@@ -132,10 +132,7 @@ async def options(interaction: discord.Interaction):
             else:
                 pass
         if permissionGranted == True:
-            connection = TicketData.connect()
-            cursor = TicketData.cursor(connection)
-            ticketInfo = TicketData.find(cursor, tchannel.id)
-            TicketData.close(connection)
+            ticketInfo = await TicketRepository.find(tchannel.id)
             if ticketInfo != None:
                 acategory = discord.utils.get(guild.categories, id=settings.archived_tickets_category_id)
                 acategoryc = (50 - (len(acategory.channels)))
@@ -149,36 +146,20 @@ async def options(interaction: discord.Interaction):
                     acategoryc2 = str(f'{acategoryc} slots left')
                 text = str(f'''🚩- Claim a ticket\n\n👥- Add a member to the ticket\n\n👋- Remove a member from the ticket\n\n🟢- Mark a ticket as active\n\n✋- Mark a ticket as onhold\n\n📓- Rename a ticket channel\n\n🗄️- Place a ticket in the archives **({acategoryc2})**\n\n📝- Transcribe and delete a ticket                        ''')
                 embed3 = discord.Embed(title='''**Ticket Options**''', description=f'{text}', color=settings.embed_color)
-                try:
-                    lauthor2 = (ticketInfo[1])
-                    lauthor3 = (int(lauthor2))
-                    lauthor4 = get(guild.members, id=lauthor3)
-                    if lauthor4 == None:
-                        lauthor5 = await bot.fetch_user(lauthor3)
-                        if lauthor5 == None:
-                           lauthor = str("N/A") 
-                        else:
-                            lauthor = lauthor5
+                lauthor4 = get(guild.members, id=ticketInfo.author_id)
+                if lauthor4 == None:
+                    lauthor5 = await bot.fetch_user(ticketInfo.author_id)
+                    if lauthor5 == None:
+                        lauthor = str("N/A")
                     else:
-                        lauthor = lauthor4
-                except IndexError:
-                    lauthor = str("N/A")
-                try:
-                    ltype = (ticketInfo[4])
-                except IndexError:
-                    ltype = str("N/A")
-                try:
-                    lcreation = (ticketInfo[3])
-                except IndexError:
-                    lcreation = str("N/A")
-                try:
-                    lstatus = (ticketInfo[5])
-                except IndexError:
-                    lstatus = str("N/A")
-                if (ticketInfo[2]) != "No":
-                    lcstatus = (ticketInfo[2])
-                    lcstatus2 = int(lcstatus)
-                    claimer = await bot.fetch_user(lcstatus2)
+                        lauthor = lauthor5
+                else:
+                    lauthor = lauthor4
+                ltype = ticketInfo.type
+                lcreation = format_created_at(ticketInfo.created_at)
+                lstatus = ticketInfo.status.value.capitalize()
+                if ticketInfo.claimed_by != None:
+                    claimer = await bot.fetch_user(ticketInfo.claimed_by)
                     cstatus = str(f"**Claimed** ({claimer.mention})")
                 else:
                     cstatus = str(f'**Not Claimed**')
@@ -210,7 +191,7 @@ async def options(interaction: discord.Interaction):
             except discord.HTTPException:
                 await interaction.response.send_message(f'''**You can't use that command!****''')
     except Exception as e:
-        message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
+        await interaction.response.send_message('A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
         activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{settings.bot_status_message}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(settings.debug_log_send_id)
@@ -223,29 +204,40 @@ async def options(interaction: discord.Interaction):
         print(text) 
 
  
-@ticket.command(name = "info", description="Shows information about the bot!")
-async def self(interaction:discord.Interaction):
+@ticket.command(name = "info", description="Tell you about myself and how I'm doing")
+async def info_command(interaction:discord.Interaction):
+    author = interaction.user
+    # The database probe and the GitHub lookup are real network calls and Discord only
+    # allows three seconds for the initial response, so a loading embed goes out first
+    # and is edited in place once the checks return -- the same pattern /sync uses.
+    embedLoading = discord.Embed(title='Information', description='Running health checks...', color=settings.embed_color)
+    embedLoading.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
+    embedLoading.set_author(name=f'{author}', icon_url=author.display_avatar)
+    await interaction.response.send_message(embed=embedLoading, ephemeral=True)
     try:
-        author = interaction.user
-        guild = interaction.guild
+        version = get_project_version()
         embed6 = discord.Embed(title='Information', description=f'''Hi there! I'm **{bot.user.name}**, a discord ticket system bot designed by WebTheDev on GitHub!''', color=settings.embed_color)
         latency = bot.latency * 1000
         embed6.add_field(name="**__Latency__**", value=f"❤️: {latency:.2f}ms")
         botOwner = await bot.fetch_user(settings.debug_log_send_id)
         embed6.add_field(name="**__Bot Owner__**", value=f"{botOwner.mention}")
-        embed6.add_field(name= "**__Version__**", value=f"`{get_project_version()}`")
+        embed6.add_field(name= "**__Version__**", value=f"`{version}`")
         embed6.add_field(name="**__Github Repository__**", value="[Click Me!](https://github.com/WebTheDev/TicketBot)")
         botCreator = await bot.fetch_user(387002430602346499)
         embed6.add_field(name="**__Bot Creator__**", value=f"{botCreator}")
-        embed6.add_field(name="**__Status__**", value=f"Everything is good ✅")
+        databaseHealth = await database_health()
+        embed6.add_field(name="**__Database__**", value=databaseHealth.describe())
+        updateStatus = await check_github_for_updates(version)
+        embed6.add_field(name="**__Updates__**", value=updateStatus.describe())
+        embed6.add_field(name="**__Status__**", value=overall_status(databaseHealth, latency))
         embed6.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.display_avatar}')
         embed6.set_author(name=f'{author}', icon_url=author.display_avatar)
         try:
-            await interaction.response.send_message(embed=embed6, ephemeral=True)
+            await interaction.edit_original_response(embed=embed6)
         except discord.HTTPException:
-            await interaction.response.send_message("Something funny happened here, try again", ephemeral=True)
+            await interaction.edit_original_response(content="Something funny happened here, try again", embed=None)
     except Exception as e:
-        message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
+        await interaction.edit_original_response(content='A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', embed=None)
         activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{settings.bot_status_message}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(settings.debug_log_send_id)
@@ -258,21 +250,20 @@ async def self(interaction:discord.Interaction):
         print(text)
 
 
-@ticket.command(name = "python", description="A easter egg command!")
-async def self(interaction:discord.Interaction):
+@ticket.command(name = "python", description="Ask me not to do it")
+async def python_command(interaction:discord.Interaction):
     try:
         author = interaction.user
-        guild = interaction.guild
         embed = discord.Embed(description=f"DON'T DO IT **{author.display_name}**!!", color=settings.embed_color)
-        embed.set_image(url="https://media.tenor.com/j9rUo2jsSbEAAAAC/do-not-run-python-python-computer.gif")
+        embed.set_image(url="https://static2.klipy.com/ii/9294a2e836d178ddc22430dd7765727e/90/26/wFRb90uxMElMZVQF1o1.gif")
         embed.set_footer(text=f"{settings.footer_of_embeds} | {bot.user.id}", icon_url=f'{bot.user.avatar}')
         embed.set_author(name=f'{author}', icon_url=author.avatar)
         try:
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except discord.HTTPException:
-            await interaction.response.send_message("https://media.tenor.com/j9rUo2jsSbEAAAAC/do-not-run-python-python-computer.gif", ephemeral=True)
+            await interaction.response.send_message("https://static2.klipy.com/ii/9294a2e836d178ddc22430dd7765727e/90/26/wFRb90uxMElMZVQF1o1.gif", ephemeral=True)
     except Exception as e:
-        message2 = await interaction.response.send_message(f'A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
+        await interaction.response.send_message('A unknown error has occurred, a copy of the error has been sent to the bot owner ❌', ephemeral=True)
         activity1 = discord.Activity(type=discord.ActivityType.playing, name=f'{settings.bot_status_message}')
         await bot.change_presence(status=discord.Status.dnd, activity=activity1)
         web = bot.get_user(settings.debug_log_send_id)

@@ -26,9 +26,10 @@
 - Something else that I'm probably missing!
 
 ---
-### [Python](https://www.python.org/downloads/) Packages Required (Install with [Pip](https://pip.pypa.io/en/stable/installing/)):
-- [Discord](https://pypi.org/project/discord.py/)
-- [chat-exporter](https://pypi.org/project/chat-exporter/)
+### Requirements
+- [Python](https://www.python.org/downloads/) 3.14 or newer, and [uv](https://docs.astral.sh/uv/) for dependency management.
+- A [PostgreSQL](https://www.postgresql.org/download/) database (14 or newer). The bot stores every ticket there and reaches it asynchronously via [asyncpg](https://pypi.org/project/asyncpg/).
+- Python packages are declared in `pyproject.toml` and installed with `uv sync`: [discord.py](https://pypi.org/project/discord.py/), [chat-exporter](https://pypi.org/project/chat-exporter/), [SQLAlchemy](https://pypi.org/project/SQLAlchemy/), [asyncpg](https://pypi.org/project/asyncpg/), and [Alembic](https://pypi.org/project/alembic/).
 
 ---
 ### Setup
@@ -37,11 +38,46 @@
 - Create a channel that the bot can use to send the "Create a ticket" embed.
 - Create a bot application at the [discord developer panel](https://discord.com/developers/applications) and enable all intents. 
 - Add the bot to your discord server by generating a OAuth2 invite link for your application and make sure to enable **bot** and **apps.commands**. Then for the permissions, tick Administrator.
-- Copy your bot token from the [discord developer panel](https://discord.com/developers/applications) under the bot tab and add it to the "[token.json](https://github.com/WebTheDev/TicketBot/blob/main/token.json)" file.
-- Adjust the "[config.py](https://github.com/WebTheDev/TicketBot/blob/main/config.py)" file to your liking.
-- Run the "[main.py](https://github.com/WebTheDev/TicketBot/blob/main/main.py)" file in python and the bot should start up. The bot will be fully running once the "Bot is up and running" message is outputted to the console.
+- Create an empty PostgreSQL database for the bot, along with a user that can create tables in it.
+- Create a `.env` file in the bot's folder and fill in the settings defined in "[config.py](https://github.com/WebTheDev/TicketBot/blob/main/src/ticketbot/config.py)". At minimum this needs your bot token (copied from the [discord developer panel](https://discord.com/developers/applications) under the bot tab), the channel/category/guild IDs, and your database connection string:
+  ```
+  BOT_TOKEN=your-token-here
+  DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/ticketbot
+  ```
+  The `postgresql+asyncpg://` prefix is required — that is what selects the async driver.
+- Install dependencies with `uv sync`.
+- Create the database tables with `uv run alembic upgrade head`. Run this again after pulling any update that changes the schema.
+- **Upgrading from a version that used SQLite?** Import your old tickets once with `uv run python scripts/migrate_sqlite_to_postgres.py path/to/tickets.db`. It is safe to re-run; tickets already in PostgreSQL are skipped.
+- Start the bot with `uv run ticketbot`. The bot will be fully running once the "Bot is up and running" message is outputted to the console.
 - Run the **/sync** command in order to sync the bot's slash commands with discord.
-- **ON FIRST RUN, THE BOT WILL EXIT PYTHON AUTOMATICALLY IN ORDER TO SAVE THE MESSAGE ID OF THE "CREATE A TICKET" EMBED IN THE BOT'S CONFIG.** Simply restart the bot again in order to apply the necessary config changes.
+- On first run the bot posts the "Create a ticket" embed and saves its message ID to the database automatically. **No restart is required** — earlier versions wrote that ID back into the config file and restarted themselves; that no longer happens.
+
+---
+### Configuration
+Settings are split in two, by whether they can safely change while the bot is running.
+
+**`.env` — read once at startup, restart to change.** These are the values the bot needs before it can reach the database: `BOT_TOKEN`, `DATABASE_URL`, `GUILD_ID`, the channel and category IDs, and `DEBUG_LOG_SEND_ID`.
+
+**PostgreSQL — live, changed with `/config`, no restart.** Ticket types, the roles that staff each type, and the appearance/behavior settings. On your first start these are seeded automatically from whatever is already in your `.env`, so an existing setup carries over untouched; the seeded keys can then be deleted from `.env`, as they are no longer read.
+
+| command | what it does |
+| --- | --- |
+| `/config show` | Show everything currently live |
+| `/config types list` | List the ticket types in the creation dropdown |
+| `/config types add <key> <label> <description> [position]` | Add a ticket type |
+| `/config types edit <key> [label] [description] [position]` | Change a ticket type |
+| `/config types remove <key> [force]` | Remove a ticket type |
+| `/config roles list` | Show which roles staff each type |
+| `/config roles add <type> <role>` | Give a role access to a ticket type |
+| `/config roles remove <type> <role>` | Take that access away |
+| `/config set <setting> <value>` | Change one setting (embed colour, footer, status, ticket limits, DM copies) |
+
+Only the bot owner (`DEBUG_LOG_SEND_ID`) and server administrators can use these commands.
+
+A few notes on the limits Discord imposes, which the commands enforce for you:
+- At most **25 ticket types**, because that is the maximum number of options in a dropdown.
+- Type labels and descriptions are capped at **100 characters**.
+- Removing a type that still has open tickets is refused unless you pass `force: True`. Those tickets keep working afterwards, but staff role permissions no longer apply to them.
 
 ---
 ### Support

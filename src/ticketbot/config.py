@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Dict, Tuple
 
 from pydantic import Field
@@ -29,9 +28,11 @@ class Settings(BaseSettings):
     ticket_transcript_channel_id: int = Field(
         description="ID of the Channel to send ticket transcripts to",
     )
-    database_name: str = Field(
-        default="tickets.db",
-        description="Leave set to default value unless if you want to use a different database name",
+    database_url: str = Field(
+        description=(
+            "PostgreSQL connection string for the ticket database. Must use the asyncpg "
+            "driver, e.g. postgresql+asyncpg://user:password@localhost:5432/ticketbot"
+        ),
     )
     debug_log_send_id: int = Field(
         description="ID of the Bot Owner to send debug information to",
@@ -42,7 +43,12 @@ class Settings(BaseSettings):
         description="ID of the Channel to send the Create a ticket embed to",
     )
     id_of_message_for_ticket_creation: int = Field(
-        description="This is auto-adjusted, leave set to 0",
+        default=0,
+        description=(
+            "LEGACY: the ticket-creation embed's message ID now lives in PostgreSQL as "
+            "the `creation_message_id` setting and is managed by the bot. This field is "
+            "read once, during first-run seeding, and is not required for the .env unless if a embed already exists."
+        ),
     )
     active_tickets_category_id: int = Field(
         description="ID of the active tickets category",
@@ -54,6 +60,10 @@ class Settings(BaseSettings):
         description="ID of the archived tickets category",
     )
 
+    # LEGACY -- everything from here down now lives in PostgreSQL and is edited with the
+    # /config commands. These fields are read once, during first-run seeding, so an
+    # existing install carries its settings over; after that they are ignored and can be
+    # removed from .env. See utils/runtime_config.py.
     options_dict: Dict[str, Tuple[str, str, str]] = Field(
         default={
             "Option 1": ("Sales 💲", "sales", "Create a sales related ticket."),
@@ -111,29 +121,6 @@ class Settings(BaseSettings):
         default=0xFFFFFF,
         description="Set a custom hex color code for all embeds! Make sure to keep the 0x!",
     )
-
-    first_run: bool = Field(
-        default=True,
-        description=(
-            "This is auto-adjusted, leave set to True on first bot start (unless if you are "
-            "upgrading to a newer version of the bot, then set to False)"
-        ),
-    )
-
-
-def update_env(**updates: object) -> None:
-    """Persist key/value pairs to the .env file, updating existing keys or appending new ones."""
-    env_path = Path(".env")
-    lines = env_path.read_text().splitlines() if env_path.exists() else []
-    remaining = {key.upper(): value for key, value in updates.items()}
-    for index, line in enumerate(lines):
-        if "=" not in line or line.strip().startswith("#"):
-            continue
-        key = line.split("=", 1)[0].strip()
-        if key in remaining:
-            lines[index] = f"{key}={remaining.pop(key)}"
-    lines.extend(f"{key}={value}" for key, value in remaining.items())
-    env_path.write_text("\n".join(lines) + "\n")
 
 
 settings = Settings()

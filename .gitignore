@@ -3,3 +3,7 @@ uv.lock
 .claude
 CLAUDE.md
 *.pyc
+docker-compose.yml
+.venv
+*_cache
+__pycache__
