@@ -9,7 +9,13 @@ import pytest
 
 from ticketbot.models import TicketType
 from ticketbot.utils import runtime_config as runtime_config_module
-from ticketbot.utils.runtime_config import DB_MANAGED_KEYS, RuntimeConfig, RuntimeConfigNotLoaded
+from ticketbot.utils.runtime_config import (
+    DB_MANAGED_KEYS,
+    DEFAULT_SETTINGS,
+    DEFAULT_TICKET_TYPES,
+    RuntimeConfig,
+    RuntimeConfigNotLoaded,
+)
 
 
 def make_type(key: str, position: int, label: str | None = None) -> TicketType:
@@ -230,3 +236,108 @@ class TestAutoPostCreationEmbedDefault:
         assert "auto_post_creation_embed" in DB_MANAGED_KEYS
         with pytest.raises(RuntimeConfigNotLoaded):
             _ = RuntimeConfig().auto_post_creation_embed
+
+
+class TestSeedDefaults:
+    """`.env` no longer declares these, so the shipped defaults live in this module."""
+
+    async def test_seeds_the_default_types_when_env_has_none(self, stub, monkeypatch):
+        monkeypatch.delenv("OPTIONS_DICT", raising=False)
+        config = RuntimeConfig()
+        await config.bootstrap()
+        assert config.known_type_keys() == tuple(t["key"] for t in DEFAULT_TICKET_TYPES)
+
+    async def test_default_types_are_positioned_in_order(self, stub, monkeypatch):
+        monkeypatch.delenv("OPTIONS_DICT", raising=False)
+        await RuntimeConfig().bootstrap()
+        positions = [entry["position"] for entry in stub.seeded["types"]]
+        assert positions == list(range(len(DEFAULT_TICKET_TYPES)))
+
+    async def test_every_default_setting_is_seeded(self, stub):
+        await RuntimeConfig().bootstrap()
+        assert set(DEFAULT_SETTINGS) <= set(stub.seeded["scalars"])
+
+    async def test_defaults_cover_every_db_managed_key(self, stub):
+        # A key in DB_MANAGED_KEYS with no seeded value reads as None on a fresh install.
+        await RuntimeConfig().bootstrap()
+        assert DB_MANAGED_KEYS <= set(stub.seeded["scalars"])
+
+
+class TestLegacyEnvSeeding:
+    """An install upgrading from the .env-only era keeps the settings it had."""
+
+    async def test_a_leftover_scalar_wins_over_the_default(self, stub, monkeypatch):
+        monkeypatch.setenv("FOOTER_OF_EMBEDS", "My Old Server")
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["scalars"]["footer_of_embeds"] == "My Old Server"
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [("0x5865F2", 0x5865F2), ("5793266", 0x5865F2), ("#5865F2", 0x5865F2)],
+    )
+    async def test_a_legacy_color_is_read_as_hex_or_decimal(
+        self, stub, monkeypatch, raw, expected
+    ):
+        # The removed field was a plain int, so both forms exist in the wild.
+        monkeypatch.setenv("EMBED_COLOR", raw)
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["scalars"]["embed_color"] == expected
+
+    async def test_an_unparseable_legacy_value_falls_back_to_the_default(
+        self, stub, monkeypatch
+    ):
+        # Refusing to start over a setting that is about to become editable in Discord
+        # would be a worse outcome than ignoring it.
+        monkeypatch.setenv("EMBED_COLOR", "chartreuse")
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["scalars"]["embed_color"] == DEFAULT_SETTINGS["embed_color"]
+
+    async def test_legacy_bools_are_coerced(self, stub, monkeypatch):
+        monkeypatch.setenv("MULTIPLE_TICKETS_ALLOWED", "True")
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["scalars"]["multiple_tickets_allowed"] is True
+
+    async def test_a_legacy_options_dict_replaces_the_defaults(self, stub, monkeypatch):
+        monkeypatch.setenv(
+            "OPTIONS_DICT",
+            '{"Option 1": ["Billing 💳", "billing", "Ask about an invoice."]}',
+        )
+        config = RuntimeConfig()
+        await config.bootstrap()
+        assert config.known_type_keys() == ("billing",)
+
+    async def test_legacy_channel_perms_are_seeded(self, stub, monkeypatch):
+        monkeypatch.setenv(
+            "OPTIONS_DICT", '{"Option 1": ["Billing 💳", "billing", "Ask about an invoice."]}'
+        )
+        monkeypatch.setenv("CHANNEL_PERMS", '{"billing": [123, 456]}')
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["roles"] == [
+            {"type_key": "billing", "role_id": 123},
+            {"type_key": "billing", "role_id": 456},
+        ]
+
+    async def test_placeholder_role_ids_are_still_dropped(self, stub, monkeypatch):
+        monkeypatch.setenv(
+            "OPTIONS_DICT", '{"Option 1": ["Billing 💳", "billing", "Ask about an invoice."]}'
+        )
+        monkeypatch.setenv("CHANNEL_PERMS", '{"billing": [0, 0]}')
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["roles"] == []
+
+    async def test_roles_for_an_unknown_type_are_dropped(self, stub, monkeypatch):
+        # The roles table has a foreign key now, so these would fail to insert.
+        monkeypatch.setenv("CHANNEL_PERMS", '{"nonexistent": [123]}')
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["roles"] == []
+
+    async def test_malformed_legacy_json_is_ignored(self, stub, monkeypatch):
+        monkeypatch.setenv("OPTIONS_DICT", "not json at all")
+        config = RuntimeConfig()
+        await config.bootstrap()
+        assert config.known_type_keys() == tuple(t["key"] for t in DEFAULT_TICKET_TYPES)
+
+    async def test_a_legacy_message_id_is_carried_over(self, stub, monkeypatch):
+        monkeypatch.setenv("ID_OF_MESSAGE_FOR_TICKET_CREATION", "1402318374923746816")
+        await RuntimeConfig().bootstrap()
+        assert stub.seeded["scalars"]["creation_message_id"] == 1402318374923746816

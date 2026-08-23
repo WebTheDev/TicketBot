@@ -39,7 +39,7 @@
 - Create a bot application at the [discord developer panel](https://discord.com/developers/applications) and enable all intents. 
 - Add the bot to your discord server by generating a OAuth2 invite link for your application and make sure to enable **bot** and **apps.commands**. Then for the permissions, tick Administrator.
 - Create an empty PostgreSQL database for the bot, along with a user that can create tables in it.
-- Create a `.env` file in the bot's folder and fill in the settings defined in "[config.py](https://github.com/WebTheDev/TicketBot/blob/main/src/ticketbot/config.py)". At minimum this needs your bot token (copied from the [discord developer panel](https://discord.com/developers/applications) under the bot tab), the channel/category/guild IDs, and your database connection string:
+- Create a `.env` file in the bot's folder and fill in every variable listed under [Configuration](#configuration) below — they are all required. See the example below:
   ```
   BOT_TOKEN=your-token-here
   DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/ticketbot
@@ -56,9 +56,24 @@
 ### Configuration
 Settings are split in two, by whether they can safely change while the bot is running.
 
-**`.env` — read once at startup, restart to change.** These are the values the bot needs before it can reach the database: `BOT_TOKEN`, `DATABASE_URL`, `GUILD_ID`, the channel and category IDs, and `DEBUG_LOG_SEND_ID`.
+**`.env` — read once at startup, restart to change.** Only the values the bot needs before it can reach the database, or that it cannot change without a restart anyway. This is the complete list, and all of them are required:
 
-**PostgreSQL — live, changed with `/config`, no restart.** Ticket types, the roles that staff each type, and the appearance/behavior settings. On your first start these are seeded automatically from whatever is already in your `.env`, so an existing setup carries over untouched; the seeded keys can then be deleted from `.env`, as they are no longer read.
+| variable | what it is |
+| --- | --- |
+| `BOT_TOKEN` | Your bot's token, from the Discord developer panel |
+| `DATABASE_URL` | PostgreSQL connection string (must use the `postgresql+asyncpg://` prefix) |
+| `GUILD_ID` | The server the bot runs in |
+| `TICKET_LOGS_CHANNEL_ID` | Where system logs are sent |
+| `TICKET_TRANSCRIPT_CHANNEL_ID` | Where ticket transcripts are sent |
+| `DEBUG_LOG_SEND_ID` | The bot owner, who receives debug information |
+| `ID_OF_CHANNEL_TO_SEND_TICKET_CREATION_EMBED` | Where the "Create a ticket" embed lives |
+| `ACTIVE_TICKETS_CATEGORY_ID` | Category for active tickets |
+| `ON_HOLD_TICKETS_CATEGORY_ID` | Category for on-hold tickets |
+| `ARCHIVED_TICKETS_CATEGORY_ID` | Category for archived tickets |
+
+**PostgreSQL — live, changed with `/config`, no restart.** Everything else: ticket types, the roles that staff each type, and the appearance/behavior settings. Nothing below is set in `.env`.
+
+**Upgrading?** If your `.env` still carries settings that have since moved to the database (`EMBED_COLOR`, `FOOTER_OF_EMBEDS`, `BOT_STATUS_TYPE`, `BOT_STATUS_MESSAGE`, `MULTIPLE_TICKETS_ALLOWED`, `DM_TICKET_COPIES`, `TICKET_TYPE_ALLOWED_TO_CREATE_PRIVATE_CHANNELS`, `OPTIONS_DICT`, `CHANNEL_PERMS`, `ID_OF_MESSAGE_FOR_TICKET_CREATION`), they are read **once**, on the first start against an empty database, so your existing setup carries over untouched. After that they are ignored and can be deleted. Leaving them in place is harmless — unrecognised keys no longer cause a startup error.
 
 | command | what it does |
 | --- | --- |
